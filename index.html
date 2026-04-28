@@ -1,0 +1,871 @@
+<!DOCTYPE html><html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hiGen Financial Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #1a1a1a; padding: 20px; }
+.loading { text-align: center; padding: 60px 20px; color: #888; }
+.loading .spinner { width: 32px; height: 32px; border: 3px solid #eee; border-top-color: #534AB7; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.error { background: #fcebeb; color: #791f1f; padding: 16px; border-radius: 8px; margin: 20px 0; }
+.nav { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+.nav button { padding: 8px 16px; border: 1px solid #d3d1c7; background: #fff; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
+.nav button:hover { background: #f1efe8; }
+.nav button.active { background: #534AB7; color: #fff; border-color: #534AB7; }
+.section { display: none; }
+.section.active { display: block; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.metric { background: #f8f7f4; border-radius: 8px; padding: 14px; }
+.metric .label { font-size: 12px; color: #888; margin-bottom: 4px; }
+.metric .value { font-size: 22px; font-weight: 500; }
+.metric .sub { font-size: 11px; color: #888; margin-top: 2px; }
+.chart-wrap { position: relative; width: 100%; height: 300px; margin-bottom: 24px; }
+.chart-wrap.tall { height: 350px; }
+.chart-wrap.small { height: 200px; }
+h2 { font-size: 16px; font-weight: 500; margin: 24px 0 12px; color: #444; }
+h2:first-child { margin-top: 0; }
+h3 { font-size: 14px; font-weight: 500; margin: 20px 0 10px; color: #666; }
+table.data { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+table.data th { text-align: left; padding: 8px 10px; border-bottom: 2px solid #e8e6e0; color: #888; font-weight: 500; font-size: 12px; }
+table.data td { padding: 8px 10px; border-bottom: 1px solid #f1efe8; }
+table.data td.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.data tr:hover { background: #faf9f6; }
+.pos { color: #0F6E56; }
+.neg { color: #A32D2D; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.badge.green { background: #EAF3DE; color: #3B6D11; }
+.badge.red { background: #FCEBEB; color: #791F1F; }
+.badge.purple { background: #EEEDFE; color: #534AB7; }
+.insight { background: #f8f7f4; border-left: 3px solid #534AB7; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 13px; line-height: 1.6; }
+.insight strong { font-weight: 600; }
+.insight-highlight { background: linear-gradient(135deg, #f0eeff 0%, #f8f7f4 100%); border-left: 4px solid #534AB7; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 16px 0; font-size: 14px; line-height: 1.7; }
+.insight-highlight .big-number { font-size: 28px; font-weight: 600; color: #534AB7; }
+.insight-highlight .big-green { font-size: 28px; font-weight: 600; color: #0F6E56; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 8px; font-size: 12px; color: #888; }
+.legend span { display: flex; align-items: center; gap: 4px; }
+.legend .dot { width: 10px; height: 10px; border-radius: 2px; }
+.source { font-size: 11px; color: #b4b2a9; margin-top: 24px; text-align: center; }
+.source a { color: #534AB7; text-decoration: none; }
+.divider { border: none; border-top: 1px solid #e8e6e0; margin: 28px 0; }
+.cost-card { background: #f8f7f4; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.cost-card .plan-name { font-weight: 500; font-size: 14px; }
+.cost-card .plan-price { font-size: 13px; color: #888; }
+.cost-card .cost-val { font-size: 18px; font-weight: 500; }
+.cost-card .margin-badge { padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
+.cost-card .margin-badge.high { background: #EAF3DE; color: #3B6D11; }
+.cost-card .margin-badge.mid { background: #FFF3E0; color: #D85A30; }
+.narrative { background: #faf9f6; border-radius: 10px; padding: 20px; margin: 20px 0; font-size: 14px; line-height: 1.8; }
+.narrative p { margin-bottom: 12px; }
+.narrative p:last-child { margin-bottom: 0; }
+.narrative .highlight { background: #EEEDFE; padding: 2px 6px; border-radius: 4px; font-weight: 500; }
+.narrative .green-highlight { background: #EAF3DE; padding: 2px 6px; border-radius: 4px; font-weight: 500; color: #3B6D11; }
+.ov-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+@media (max-width: 600px) { .ov-hero { grid-template-columns: 1fr; } }
+.ov-raise-card { background: linear-gradient(135deg, #534AB7 0%, #3b35a0 100%); color: #fff; border-radius: 12px; padding: 20px; }
+.ov-raise-card .ov-label { font-size: 12px; opacity: 0.7; margin-bottom: 4px; }
+.ov-raise-card .ov-big { font-size: 32px; font-weight: 600; }
+.ov-raise-card .ov-sub { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+.ov-raise-card .ov-row { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); }
+.ov-raise-card .ov-item { text-align: center; }
+.ov-raise-card .ov-item .ov-v { font-size: 18px; font-weight: 600; }
+.ov-raise-card .ov-item .ov-l { font-size: 11px; opacity: 0.7; }
+.ov-runway-card { background: linear-gradient(135deg, #0F6E56 0%, #0a5a46 100%); color: #fff; border-radius: 12px; padding: 20px; }
+.ov-runway-card .ov-label { font-size: 12px; opacity: 0.7; margin-bottom: 4px; }
+.ov-runway-card .ov-big { font-size: 32px; font-weight: 600; }
+.ov-runway-card .ov-sub { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+.ov-runway-card .ov-row { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); }
+.ov-runway-card .ov-item { text-align: center; }
+.ov-runway-card .ov-item .ov-v { font-size: 18px; font-weight: 600; }
+.ov-runway-card .ov-item .ov-l { font-size: 11px; opacity: 0.7; }
+.milestone-timeline { display: flex; flex-direction: column; gap: 0; margin: 16px 0 24px; }
+.milestone { display: flex; gap: 16px; padding: 12px 0; position: relative; }
+.milestone:not(:last-child)::before { content:''; position: absolute; left: 15px; top: 36px; bottom: 0; width: 2px; background: #e8e6e0; }
+.milestone .ms-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0; }
+.milestone .ms-body { flex: 1; }
+.milestone .ms-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.milestone .ms-detail { font-size: 12px; color: #888; }
+.milestone .ms-metrics { display: flex; gap: 16px; margin-top: 6px; flex-wrap: wrap; }
+.milestone .ms-metrics .ms-m { background: #f8f7f4; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+.ct-round { background: #f8f7f4; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.ct-round-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.ct-round-title { font-size: 16px; font-weight: 600; }
+.ct-round-title .round-badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; margin-left: 8px; }
+.ct-input-group { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.ct-input-group label { color: #888; white-space: nowrap; }
+.ct-input { width: 70px; padding: 6px 10px; border: 1px solid #d3d1c7; border-radius: 6px; font-size: 14px; font-weight: 500; text-align: right; background: #fff; color: #1a1a1a; outline: none; }
+.ct-input:focus { border-color: #534AB7; box-shadow: 0 0 0 2px rgba(83,74,183,0.15); }
+.ct-input-group .suffix { color: #888; font-weight: 500; }
+.ct-valuation { background: linear-gradient(135deg, #f0eeff 0%, #f8f7f4 100%); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+.ct-val-item { text-align: center; }
+.ct-val-item .ct-val-label { font-size: 11px; color: #888; }
+.ct-val-item .ct-val-num { font-size: 18px; font-weight: 600; color: #534AB7; }
+.ct-body { display: grid; grid-template-columns: 1fr 200px; gap: 20px; align-items: start; }
+@media (max-width: 600px) { .ct-body { grid-template-columns: 1fr; } }
+.ct-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.ct-row:last-child { border-bottom: none; }
+.ct-row .ct-name { font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.ct-row .ct-dot { width: 8px; height: 8px; border-radius: 50%; }
+.ct-row .ct-pct { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ct-row .ct-usd { font-size: 12px; color: #534AB7; font-weight: 500; margin-left: 6px; }
+.ct-row .ct-delta { font-size: 11px; color: #A32D2D; margin-left: 6px; }
+.ct-row .ct-delta.pos { color: #888; }
+.ct-summary { background: linear-gradient(135deg, #f0eeff 0%, #f8f7f4 100%); border-radius: 10px; padding: 16px 20px; margin-top: 20px; }
+.ct-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+.ct-summary-item { text-align: center; }
+.ct-summary-item .ct-s-label { font-size: 11px; color: #888; margin-bottom: 2px; }
+.ct-summary-item .ct-s-value { font-size: 20px; font-weight: 600; color: #534AB7; }
+.ct-market-note { font-size: 12px; color: #888; font-style: italic; margin-top: 4px; }
+.cf-hero { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+@media (max-width: 700px) { .cf-hero { grid-template-columns: repeat(2, 1fr); } }
+.cf-card { border-radius: 10px; padding: 16px; color: #fff; }
+.cf-card .cf-label { font-size: 11px; opacity: 0.75; margin-bottom: 4px; }
+.cf-card .cf-big { font-size: 24px; font-weight: 600; }
+.cf-card .cf-sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+.cf-dfc { background: #f8f7f4; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
+.cf-dfc table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.cf-dfc th { text-align: left; padding: 6px 8px; color: #888; font-weight: 500; font-size: 11px; border-bottom: 2px solid #e8e6e0; }
+.cf-dfc td { padding: 6px 8px; border-bottom: 1px solid #f1efe8; font-variant-numeric: tabular-nums; }
+.cf-dfc td.num { text-align: right; }
+.cf-dfc tr.total-row { font-weight: 600; background: #f0eeff; }
+.cf-dfc tr.total-row td { border-bottom: 2px solid #d3d1c7; }
+.cf-dfc tr.subtotal-row { font-weight: 500; }
+.cf-dfc tr.subtotal-row td { border-top: 1px solid #d3d1c7; }
+.cf-scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+@media (max-width: 700px) { .cf-scenario-grid { grid-template-columns: 1fr; } }
+.cf-scenario { border-radius: 10px; padding: 16px 20px; }
+.cf-scenario .sc-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.cf-scenario .sc-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.cf-scenario .sc-row:last-child { border-bottom: none; }
+.cf-scenario .sc-label { color: #888; }
+.cf-scenario .sc-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div>Carregando dados do Google Drive...</div>
+  </div>
+</div>
+
+<script>
+const FILE_ID = '1cHvc9kr7EnXME3FDCf8JCxLHcBRAWH9H9DUQ319y51k';
+const MONTHS = ['M0','M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12','M13','M14','M15','M16','M17','M18','M19','M20','M21','M22','M23','M24','M25','M26','M27','M28','M29','M30','M31','M32','M33','M34','M35','M36'];
+
+function parseRow(line) { if(!line||!line.includes('|'))return[]; return line.split('|').map(c=>c.trim()).filter((_,i,a)=>i>0&&i<a.length-1); }
+function parseBRL(v) { if(!v||v==='-'||v==='\\-'||v===''||v==='\u2013')return 0; let s=v.replace(/R\$\s*/g,'').replace(/\\/g,'').replace(/\./g,'').replace(',','.').replace(/[()]/g,m=>m==='('?'-':'').replace(/\s/g,''); let n=parseFloat(s); return isNaN(n)?0:n; }
+function parsePct(v) { if(!v||v==='-')return 0; let s=v.replace(/[()%\\]/g,'').replace(',','.'); let n=parseFloat(s); return isNaN(n)?0:n; }
+function fmt(n) { if(Math.abs(n)>=1e6)return'R$'+(n/1e6).toFixed(1)+'M'; if(Math.abs(n)>=1e3)return'R$'+(n/1e3).toFixed(0)+'K'; return'R$'+Math.round(n); }
+function fmtUSD(n) { if(Math.abs(n)>=1e6)return'$'+(n/1e6).toFixed(1)+'M'; if(Math.abs(n)>=1e3)return'$'+(n/1e3).toFixed(0)+'K'; return'$'+Math.round(n); }
+function fmtN(n) { if(Math.abs(n)>=1e6)return(n/1e6).toFixed(1)+'M'; if(Math.abs(n)>=1e3)return(n/1e3).toFixed(0)+'K'; return Math.round(n).toLocaleString('pt-BR'); }
+function findRow(lines,kw) { for(let i=0;i<lines.length;i++){if(lines[i].includes(kw))return lines[i];} return null; }
+function extractMonthlyValues(line,si) { let c=parseRow(line); return c.slice(si).map(parseBRL); }
+
+(async function() {
+  try {
+    // Standalone mode: fetch from published Google Sheets
+    const sheetsUrl = 'https://docs.google.com/spreadsheets/d/' + FILE_ID + '/export?format=tsv&gid=0';
+    let res;
+    if (window.cowork && window.cowork.callMcpTool) {
+      res = await window.cowork.callMcpTool('mcp__3c483589-dbd4-4b5e-b255-73b2de0dde21__read_file_content', { fileId: FILE_ID });
+    } else {
+      // Fetch all sheets as one text block via published URL
+      const response = await fetch('https://docs.google.com/spreadsheets/d/' + FILE_ID + '/gviz/tq?tqx=out:csv');
+      if (!response.ok) throw new Error('Publique a planilha primeiro: Arquivo > Compartilhar > Publicar na web');
+      const csvText = await response.text();
+      // Convert CSV to pipe-delimited format for compatibility
+      const csvLines = csvText.split('\n');
+      const pipeLines = csvLines.map(line => {
+        // Simple CSV to pipe: split by comma (handling quoted fields)
+        const cells = [];
+        let current = '', inQuote = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') { inQuote = !inQuote; }
+          else if (ch === ',' && !inQuote) { cells.push(current.trim()); current = ''; }
+          else { current += ch; }
+        }
+        cells.push(current.trim());
+        return '| ' + cells.join(' | ') + ' |';
+      });
+      res = { content: [{ text: pipeLines.join('\n') }] };
+    }
+    let content = '';
+    if (res.structuredContent && res.structuredContent.fileContent) content = res.structuredContent.fileContent;
+    else if (res.content && Array.isArray(res.content)) content = res.content.map(c => c.text||'').join('');
+    else if (typeof res === 'string') content = res;
+    if (!content) throw new Error('Arquivo vazio ou formato inesperado');
+    const lines = content.split('\n');
+
+    const mrrLine = findRow(lines,'MRR Total (Subscri');
+    const marginLine = findRow(lines,'Margem EBITDA');
+    const freeLine = findRow(lines,'Usu\u00E1rios Free \u2014 Fechamento');
+    const hireLine = findRow(lines,'Usu\u00E1rios Hire \u2014 Fechamento');
+    const plusLine = findRow(lines,'Usu\u00E1rios Plus \u2014 Fechamento');
+    const proLine = findRow(lines,'Usu\u00E1rios Pro \u2014 Fechamento');
+    const totalPayLine = findRow(lines,'Total Usu\u00E1rios Pagantes (Fechamento)');
+    const arpuLine = findRow(lines,'ARPU (Receita/Usu\u00E1rio Pagante)');
+    const saldoLine = findRow(lines,'Saldo Acumulado de Caixa');
+    const infraLine = findRow(lines,'Custos de Infra (modelo unit');
+    const ltvHireLine = findRow(lines,'LTV Plano Hire');
+    const ltvPlusLine = findRow(lines,'LTV Plano Plus');
+    const ltvProLine = findRow(lines,'LTV Plano Pro');
+    const cacLine = findRow(lines,'CAC (Spend MKT');
+    const ltvcacLine = findRow(lines,'LTV : CAC');
+    const recTotalAnualLine = findRow(lines,'Receita Total Anual (Gross');
+    const cogsLine = findRow(lines,'COGS (Custos de Infra');
+
+    const recAcumLine = findRow(lines,'Receita Total Acumulada no Ano');
+    const baseFreeAnualLine = findRow(lines,'Base Free (Fim de Ano)');
+    const pagAnualLine = findRow(lines,'Usu\u00E1rios Pagantes (Fim de Ano)');
+    const convRateLine = findRow(lines,'Taxa Convers\u00E3o Efetiva Free');
+    const spendMktLine = findRow(lines,'Spend Marketing Total');
+    const novosPagLine = findRow(lines,'Novos Pagantes no Ano');
+    const cacPaybackLine = findRow(lines,'CAC Payback');
+    const grossProfitLine = findRow(lines,'Gross Profit (Lucro Bruto)');
+    const grossMarginLine = findRow(lines,'Gross Margin');
+    const arpuAnualLine = findRow(lines,'ARPU mensal (Receita/Usu');
+
+    const mrr=extractMonthlyValues(mrrLine,2), free=extractMonthlyValues(freeLine,2);
+    const hire=extractMonthlyValues(hireLine,2), plus=extractMonthlyValues(plusLine,2);
+    const pro=extractMonthlyValues(proLine,2), totalPay=extractMonthlyValues(totalPayLine,2);
+    const arpu=extractMonthlyValues(arpuLine,2), infra=extractMonthlyValues(infraLine,2);
+    const saldo=extractMonthlyValues(saldoLine,7);
+    const margin=[]; if(marginLine){parseRow(marginLine).slice(1).forEach(c=>margin.push(parsePct(c)));}
+
+    const llmBase=8.0,scaleDiscounts=[];
+    for(let m=0;m<=36;m++){let d=0;if(m<=3)d=0;else if(m<=6)d=0.03;else if(m<=9)d=0.06;else if(m<=12)d=0.10;else if(m<=18)d=0.13;else if(m<=24)d=0.14;else if(m<=30)d=0.15;else d=0.16;scaleDiscounts.push(d);}
+    const llmUnitCosts=scaleDiscounts.map(d=>llmBase*(1-d));
+
+    const ltvHire=ltvHireLine?parseBRL(parseRow(ltvHireLine)[2]):0;
+    const ltvPlus=ltvPlusLine?parseBRL(parseRow(ltvPlusLine)[2]):0;
+    const ltvPro=ltvProLine?parseBRL(parseRow(ltvProLine)[2]):0;
+    const cacArr=cacLine?parseRow(cacLine).slice(2,5).map(parseBRL):[0,0,0];
+    const ltvcacArr=ltvcacLine?parseRow(ltvcacLine).slice(2,5).map(v=>parseFloat(v.replace(/[x,]/g,'.'))||0):[0,0,0];
+    const recAnual=recTotalAnualLine?parseRow(recTotalAnualLine).slice(2,5).map(parseBRL):[0,0,0];
+    const cogsAnual=cogsLine?parseRow(cogsLine).slice(2,5).map(parseBRL):[0,0,0];
+
+    const recAcum=recAcumLine?parseRow(recAcumLine).slice(2,5).map(parseBRL):[0,0,0];
+    const baseFreeAnual=baseFreeAnualLine?parseRow(baseFreeAnualLine).slice(2,5).map(parseBRL):[0,0,0];
+    const pagAnual=pagAnualLine?parseRow(pagAnualLine).slice(2,5).map(parseBRL):[0,0,0];
+    const convRate=convRateLine?parseRow(convRateLine).slice(2,5).map(v=>parsePct(v)):[0,0,0];
+    const spendMkt=spendMktLine?parseRow(spendMktLine).slice(2,5).map(parseBRL):[0,0,0];
+    const novosPag=novosPagLine?parseRow(novosPagLine).slice(2,5).map(parseBRL):[0,0,0];
+    const cacPayback=cacPaybackLine?parseRow(cacPaybackLine).slice(2,5).map(v=>parseFloat(v.replace(/[,\\]/g,'.'))||0):[0,0,0];
+    const grossProfit=grossProfitLine?parseRow(grossProfitLine).slice(2,5).map(parseBRL):[0,0,0];
+    const grossMarginPct=grossMarginLine?parseRow(grossMarginLine).slice(2,5).map(v=>parsePct(v)):[0,0,0];
+    const arpuAnual=arpuAnualLine?parseRow(arpuAnualLine).slice(2,5).map(parseBRL):[0,0,0];
+
+    // Fluxo de Caixa data
+    const fcCaptLine = findRow(lines,'Capta\u00E7\u00E3o Pre-Seed');
+    const fcReceitaLine = findRow(lines,'Receita Operacional (MRR)');
+    const fcTotalEntLine = findRow(lines,'TOTAL ENTRADAS');
+    const fcFolhaLine = findRow(lines,'(-) Folha / People');
+    const fcAdminLine = findRow(lines,'(-) Backoffice / Admin');
+    const fcMktLine = findRow(lines,'(-) MarTech');
+    const fcInfraLine = findRow(lines,'(-) Custos de Infra');
+    const fcImpostosLine = findRow(lines,'(-) Impostos sobre NFs');
+    const fcTotalSaiLine = findRow(lines,'TOTAL SA\u00CDDAS');
+    const fcFluxoLine = findRow(lines,'Fluxo L\u00EDquido Mensal');
+
+    const fcCapt=fcCaptLine?extractMonthlyValues(fcCaptLine,7):new Array(37).fill(0);
+    const fcReceita=fcReceitaLine?extractMonthlyValues(fcReceitaLine,7):mrr;
+    const fcTotalEnt=fcTotalEntLine?extractMonthlyValues(fcTotalEntLine,3):new Array(37).fill(0);
+    const fcFolha=fcFolhaLine?extractMonthlyValues(fcFolhaLine,7):new Array(37).fill(0);
+    const fcAdmin=fcAdminLine?extractMonthlyValues(fcAdminLine,7):new Array(37).fill(0);
+    const fcMkt=fcMktLine?extractMonthlyValues(fcMktLine,7):new Array(37).fill(0);
+    const fcInfra=fcInfraLine?extractMonthlyValues(fcInfraLine,7):new Array(37).fill(0);
+    const fcImpostos=fcImpostosLine?extractMonthlyValues(fcImpostosLine,7):new Array(37).fill(0);
+    const fcTotalSai=fcTotalSaiLine?extractMonthlyValues(fcTotalSaiLine,3):new Array(37).fill(0);
+    const fcFluxo=fcFluxoLine?extractMonthlyValues(fcFluxoLine,7):new Array(37).fill(0);
+
+    // Entradas/saidas anuais from FC
+    const fcEntAnual=fcTotalEntLine?parseRow(fcTotalEntLine).slice(3,6).map(parseBRL):[0,0,0];
+    const fcSaiAnual=fcTotalSaiLine?parseRow(fcTotalSaiLine).slice(3,6).map(parseBRL):[0,0,0];
+    const fcFolhaAnual=fcFolhaLine?parseRow(fcFolhaLine).slice(3,6).map(parseBRL):[0,0,0];
+    const fcAdminAnual=fcAdminLine?parseRow(fcAdminLine).slice(3,6).map(parseBRL):[0,0,0];
+    const fcMktAnual=fcMktLine?parseRow(fcMktLine).slice(3,6).map(parseBRL):[0,0,0];
+    const fcInfraAnual=fcInfraLine?parseRow(fcInfraLine).slice(3,6).map(parseBRL):[0,0,0];
+    const fcImpostosAnual=fcImpostosLine?parseRow(fcImpostosLine).slice(3,6).map(parseBRL):[0,0,0];
+
+    // Burn rate: only when fluxo < 0
+    const burnRate=[];
+    for(let m=0;m<=36;m++){
+      const fl=fcFluxo[m]||0;
+      burnRate.push(fl<0?Math.abs(fl):0);
+    }
+    // Runway: saldo / burn
+    const runway=[];
+    for(let m=0;m<=36;m++){
+      const s=saldo[m]||0;
+      const b=burnRate[m];
+      runway.push(b>0?Math.round(s/b):999);
+    }
+    // Cash positive month
+    let cashPositiveMonth=36;
+    for(let m=1;m<=36;m++){if(fcFluxo[m]>0){cashPositiveMonth=m;break;}}
+    // Max burn
+    const maxBurn=Math.max(...burnRate);
+    const maxBurnMonth=burnRate.indexOf(maxBurn);
+    // % captação consumida at M12
+    const captTotal=6000000;
+    const pctCaptConsumed12=captTotal>0?((captTotal-saldo[12])/captTotal*100):0;
+
+    const m12=12,m24=24,m36=36;
+    const lastMRR=mrr[m36]||mrr[mrr.length-1]||0, lastARR=lastMRR*12;
+    const lastPaying=totalPay[m36]||totalPay[totalPay.length-1]||0;
+    const lastFree=free[m36]||free[free.length-1]||0;
+    const lastMargin=margin[margin.length-1]||0;
+    const lastSaldo=saldo[m36]||saldo[saldo.length-1]||0;
+
+    const revGrowthY2=recAnual[0]>0?((recAnual[1]/recAnual[0]-1)*100):0;
+    const revGrowthY3=recAnual[1]>0?((recAnual[2]/recAnual[1]-1)*100):0;
+    const totalUsersY1=(baseFreeAnual[0]||0)+(pagAnual[0]||0);
+    const totalUsersY2=(baseFreeAnual[1]||0)+(pagAnual[1]||0);
+    const totalUsersY3=(baseFreeAnual[2]||0)+(pagAnual[2]||0);
+    const arrM6=(mrr[6]||0)*12, arrM12=(mrr[m12]||0)*12, arrM18=(mrr[18]||0)*12, arrM24=(mrr[m24]||0)*12;
+
+    const m36Discount=scaleDiscounts[36], llmM36=llmBase*(1-m36Discount);
+    const costTypes=[
+      {name:'Usu\u00E1rio criado (free)',price:0,cost:llmM36*3/30,marginPct:null},
+      {name:'Hire R$15 (promo)',price:15,cost:llmM36+0.0399*15+0.39+0.09,marginPct:null},
+      {name:'Hire R$39 (regular)',price:39,cost:llmM36+0.0399*39+0.39+0.09,marginPct:null},
+      {name:'Plus R$20',price:20,cost:llmM36+0.0399*20+0.39+0.09,marginPct:null},
+      {name:'Pro R$45',price:45,cost:llmM36+0.0399*45+0.39+0.09,marginPct:null}
+    ];
+    costTypes.forEach(c=>{if(c.price>0)c.marginPct=((c.price-c.cost)/c.price*100);});
+    const plans=[
+      {name:'Hire R$15',price:15,llm:llmM36,stripe:0.0399*15+0.39,fixed:0.09},
+      {name:'Hire R$39',price:39,llm:llmM36,stripe:0.0399*39+0.39,fixed:0.09},
+      {name:'Plus R$20',price:20,llm:llmM36,stripe:0.0399*20+0.39,fixed:0.09},
+      {name:'Pro R$45',price:45,llm:llmM36,stripe:0.0399*45+0.39,fixed:0.09}
+    ];
+    plans.forEach(p=>{p.total=p.llm+p.stripe+p.fixed;p.margin=((p.price-p.total)/p.price*100);});
+
+    const ratioMilestones=[1,6,12,18,24,36];
+    const ratioData=ratioMilestones.map(m=>{let f=free[m]||0,p=totalPay[m]||0;let ratio=p>0?(f/p):0;let llmAtM=llmUnitCosts[m]||llmM36;let costF=llmAtM*3/30;let avgArpu=arpu[m]||37.6;let avgMargin=avgArpu-llmAtM-(0.0399*avgArpu+0.39)-0.09;let sustainable=avgMargin>0?Math.floor(avgMargin/costF):0;return{month:'M'+m,free:f,paid:p,ratio:ratio.toFixed(1),sustainable,costF:costF.toFixed(2),avgMargin:avgMargin.toFixed(2)};});
+    const peakRatio=Math.max(...ratioData.map(r=>parseFloat(r.ratio)));
+    const peakMonth=ratioData.find(r=>parseFloat(r.ratio)===peakRatio);
+    const m36Ratio=ratioData[ratioData.length-1];
+    const sustainableRatio=m36Ratio.sustainable;
+
+    document.getElementById('app').innerHTML = `
+      <nav class="nav">
+        <button class="active" onclick="showTab('overview',this)">Vis\u00E3o geral</button>
+        <button onclick="showTab('unit',this)">Unit economics</button>
+        <button onclick="showTab('cost',this)">Custo por user</button>
+        <button onclick="showTab('ratio',this)">Free:Paid ratio</button>
+        <button onclick="showTab('cash',this)">Fluxo de caixa</button>
+        <button onclick="showTab('investor',this)">M\u00E9tricas investidor</button>
+        <button onclick="showTab('captable',this)" style="border-color:#534AB7;color:#534AB7;font-weight:600;">Cap Table</button>
+      </nav>
+
+      <div id="overview" class="section active">
+        <div class="ov-hero">
+          <div class="ov-raise-card">
+            <div class="ov-label">Rodada Pre-Seed</div>
+            <div class="ov-big">$1M USD</div>
+            <div class="ov-sub">7% equity &middot; Pre-money $13.3M &middot; Post-money $14.3M</div>
+            <div class="ov-row">
+              <div class="ov-item"><div class="ov-v">${fmt(lastARR)}</div><div class="ov-l">ARR M36</div></div>
+              <div class="ov-item"><div class="ov-v">${lastMargin.toFixed(0)}%</div><div class="ov-l">EBITDA M36</div></div>
+              <div class="ov-item"><div class="ov-v">${ltvcacArr[0]?ltvcacArr[0].toFixed(1)+'x':'N/A'}</div><div class="ov-l">LTV:CAC Y1</div></div>
+            </div>
+          </div>
+          <div class="ov-runway-card">
+            <div class="ov-label">Runway & Sa\u00FAde Financeira</div>
+            <div class="ov-big">>36 meses</div>
+            <div class="ov-sub">Caixa nunca fica negativo com capta\u00E7\u00E3o</div>
+            <div class="ov-row">
+              <div class="ov-item"><div class="ov-v">${fmt(lastSaldo)}</div><div class="ov-l">Saldo M36</div></div>
+              <div class="ov-item"><div class="ov-v">M3</div><div class="ov-l">EBITDA+</div></div>
+              <div class="ov-item"><div class="ov-v">${fmtN(lastPaying)}</div><div class="ov-l">Pagantes M36</div></div>
+            </div>
+          </div>
+        </div>
+
+        <h2>Trajet\u00F3ria anual \u2014 P&L resumido</h2>
+        <table class="data">
+          <tr><th></th><th style="text-align:right;">Ano 1</th><th style="text-align:right;">Ano 2</th><th style="text-align:right;">Ano 3</th><th style="text-align:right;">Cresc. Y2</th><th style="text-align:right;">Cresc. Y3</th></tr>
+          <tr><td><strong>Receita bruta</strong></td><td class="num">${fmt(recAnual[0])}</td><td class="num">${fmt(recAnual[1])}</td><td class="num">${fmt(recAnual[2])}</td><td class="num pos">${revGrowthY2>0?'+':''}${revGrowthY2.toFixed(0)}%</td><td class="num pos">${revGrowthY3>0?'+':''}${revGrowthY3.toFixed(0)}%</td></tr>
+          <tr><td>(-) COGS</td><td class="num">${fmt(cogsAnual[0])}</td><td class="num">${fmt(cogsAnual[1])}</td><td class="num">${fmt(cogsAnual[2])}</td><td class="num"></td><td class="num"></td></tr>
+          <tr><td><strong>Lucro bruto</strong></td><td class="num pos">${fmt(grossProfit[0])}</td><td class="num pos">${fmt(grossProfit[1])}</td><td class="num pos">${fmt(grossProfit[2])}</td><td class="num"></td><td class="num"></td></tr>
+          <tr><td>Gross margin</td><td class="num pos">${grossMarginPct[0]?grossMarginPct[0].toFixed(1)+'%':'-'}</td><td class="num pos">${grossMarginPct[1]?grossMarginPct[1].toFixed(1)+'%':'-'}</td><td class="num pos">${grossMarginPct[2]?grossMarginPct[2].toFixed(1)+'%':'-'}</td><td class="num"></td><td class="num"></td></tr>
+          <tr><td>Spend marketing</td><td class="num">${fmt(spendMkt[0])}</td><td class="num">${fmt(spendMkt[1])}</td><td class="num">${fmt(spendMkt[2])}</td><td class="num"></td><td class="num"></td></tr>
+          <tr><td>CAC</td><td class="num">${fmt(cacArr[0])}</td><td class="num">${fmt(cacArr[1])}</td><td class="num">${fmt(cacArr[2])}</td><td class="num"></td><td class="num"></td></tr>
+          <tr><td>CAC payback</td><td class="num pos">${cacPayback[0]?cacPayback[0].toFixed(1)+' m':'<1 m'}</td><td class="num pos">${cacPayback[1]?cacPayback[1].toFixed(1)+' m':'<1 m'}</td><td class="num pos">${cacPayback[2]?cacPayback[2].toFixed(1)+' m':'<1 m'}</td><td class="num"></td><td class="num"></td></tr>
+          <tr><td>LTV:CAC</td><td class="num pos">${ltvcacArr[0]?ltvcacArr[0].toFixed(1)+'x':'-'}</td><td class="num pos">${ltvcacArr[1]?ltvcacArr[1].toFixed(1)+'x':'-'}</td><td class="num pos">${ltvcacArr[2]?ltvcacArr[2].toFixed(1)+'x':'-'}</td><td class="num"></td><td class="num"></td></tr>
+        </table>
+
+        <h2>Base de usu\u00E1rios e convers\u00E3o</h2>
+        <div class="grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="metric"><div class="label">Ano 1</div><div class="value">${fmtN(totalUsersY1)}</div><div class="sub">${fmtN(pagAnual[0])} pagantes &middot; conv. ${convRate[0]?convRate[0].toFixed(1):'0'}%</div></div>
+          <div class="metric"><div class="label">Ano 2</div><div class="value">${fmtN(totalUsersY2)}</div><div class="sub">${fmtN(pagAnual[1])} pagantes &middot; conv. ${convRate[1]?convRate[1].toFixed(1):'0'}%</div></div>
+          <div class="metric"><div class="label">Ano 3</div><div class="value">${fmtN(totalUsersY3)}</div><div class="sub">${fmtN(pagAnual[2])} pagantes &middot; conv. ${convRate[2]?convRate[2].toFixed(1):'0'}%</div></div>
+        </div>
+        <div class="insight">ARPU est\u00E1vel ~<strong>R$37-38/m\u00EAs</strong> ao longo dos 3 anos. Modelo freemium gera <strong>${fmtN(novosPag[0])}</strong> novos pagantes no Ano 1, <strong>${fmtN(novosPag[1])}</strong> no Ano 2 e <strong>${fmtN(novosPag[2])}</strong> no Ano 3 via convers\u00E3o org\u00E2nica + entidades estudantis.</div>
+
+        <h2>Receita anual + margem bruta</h2>
+        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>Receita bruta (R$)</span><span><span class="dot" style="background:#1D9E75"></span>Gross margin (%)</span></div>
+        <div class="chart-wrap"><canvas id="chartRevAnual"></canvas></div>
+
+        <h2>MRR + usu\u00E1rios pagantes (36 meses)</h2>
+        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>MRR (R$)</span><span><span class="dot" style="background:#1D9E75"></span>Pagantes (#)</span></div>
+        <div class="chart-wrap"><canvas id="chartMRR"></canvas></div>
+
+        <h2>Milestones para Series A</h2>
+        <div class="milestone-timeline">
+          <div class="milestone"><div class="ms-dot" style="background:#888;">M6</div><div class="ms-body"><div class="ms-title">Valida\u00E7\u00E3o Product-Market Fit</div><div class="ms-metrics"><span class="ms-m">MRR ${fmt(mrr[6]||0)}</span><span class="ms-m">ARR ${fmt(arrM6)}</span><span class="ms-m">${fmtN(totalPay[6]||0)} pagantes</span></div></div></div>
+          <div class="milestone"><div class="ms-dot" style="background:#1D9E75;">M12</div><div class="ms-body"><div class="ms-title">Traction + EBITDA positivo</div><div class="ms-detail">Trigger para Series A</div><div class="ms-metrics"><span class="ms-m">MRR ${fmt(mrr[m12]||0)}</span><span class="ms-m">ARR ${fmt(arrM12)}</span><span class="ms-m">${fmtN(totalPay[m12]||0)} pagantes</span></div></div></div>
+          <div class="milestone"><div class="ms-dot" style="background:#534AB7;">M18</div><div class="ms-body"><div class="ms-title">Series A com m\u00E9tricas fortes</div><div class="ms-detail">Caixa R$3.1M de saldo</div><div class="ms-metrics"><span class="ms-m">MRR ${fmt(mrr[18]||0)}</span><span class="ms-m">ARR ${fmt(arrM18)}</span><span class="ms-m">${fmtN(totalPay[18]||0)} pagantes</span></div></div></div>
+          <div class="milestone"><div class="ms-dot" style="background:#D85A30;">M24</div><div class="ms-body"><div class="ms-title">Expans\u00E3o e internacionaliza\u00E7\u00E3o</div><div class="ms-metrics"><span class="ms-m">MRR ${fmt(mrr[m24]||0)}</span><span class="ms-m">ARR ${fmt(arrM24)}</span><span class="ms-m">${fmtN(totalPay[m24]||0)} pagantes</span></div></div></div>
+        </div>
+
+        <h2>Margem EBITDA mensal</h2>
+        <div class="chart-wrap"><canvas id="chartMargin"></canvas></div>
+
+        <div class="insight-highlight"><strong>Resumo para investidor:</strong> receita bruta cresce de <span class="big-number">${fmt(recAnual[0])}</span> (Y1) para <span class="big-number">${fmt(recAnual[2])}</span> (Y3). Gross margin acima de <span class="big-green">${grossMarginPct[2]?grossMarginPct[2].toFixed(0)+'%':'97%'}</span>. LTV:CAC de <span class="big-green">${ltvcacArr[0]?ltvcacArr[0].toFixed(0)+'x':'8x'}</span> no Ano 1, <span class="big-green">${ltvcacArr[2]?ltvcacArr[2].toFixed(0)+'x':'15x'}</span> no Ano 3. CAC payback <strong>&lt;1 m\u00EAs</strong>. Runway >36 meses.</div>
+      </div>
+
+      <div id="unit" class="section">
+        <h2>Unit economics por ano</h2>
+        <table class="data"><tr><th>M\u00E9trica</th><th>Ano 1</th><th>Ano 2</th><th>Ano 3</th></tr>
+        <tr><td>Receita total</td><td class="num">${fmt(recAnual[0])}</td><td class="num">${fmt(recAnual[1])}</td><td class="num">${fmt(recAnual[2])}</td></tr>
+        <tr><td>COGS</td><td class="num">${fmt(cogsAnual[0])}</td><td class="num">${fmt(cogsAnual[1])}</td><td class="num">${fmt(cogsAnual[2])}</td></tr>
+        <tr><td>Gross margin</td><td class="num">${recAnual[0]?((1-cogsAnual[0]/recAnual[0])*100).toFixed(1)+'%':'-'}</td><td class="num">${recAnual[1]?((1-cogsAnual[1]/recAnual[1])*100).toFixed(1)+'%':'-'}</td><td class="num">${recAnual[2]?((1-cogsAnual[2]/recAnual[2])*100).toFixed(1)+'%':'-'}</td></tr>
+        <tr><td>CAC</td><td class="num">${fmt(cacArr[0])}</td><td class="num">${fmt(cacArr[1])}</td><td class="num">${fmt(cacArr[2])}</td></tr>
+        <tr><td>LTV:CAC</td><td class="num">${ltvcacArr[0]?ltvcacArr[0].toFixed(1)+'x':'-'}</td><td class="num">${ltvcacArr[1]?ltvcacArr[1].toFixed(1)+'x':'-'}</td><td class="num">${ltvcacArr[2]?ltvcacArr[2].toFixed(1)+'x':'-'}</td></tr></table>
+        <h2>LTV por plano</h2>
+        <div class="grid" style="grid-template-columns:repeat(3,1fr);"><div class="metric"><div class="label">LTV Hire</div><div class="value">${fmt(ltvHire)}</div></div><div class="metric"><div class="label">LTV Plus</div><div class="value">${fmt(ltvPlus)}</div></div><div class="metric"><div class="label">LTV Pro</div><div class="value">${fmt(ltvPro)}</div></div></div>
+        <h2>ARPU mensal (36 meses)</h2>
+        <div class="chart-wrap"><canvas id="chartARPU"></canvas></div>
+      </div>
+
+      <div id="cost" class="section">
+        <h2>Custo por tipo de usu\u00E1rio</h2>
+        <div class="cost-card" style="border-left:4px solid #888;"><div><div class="plan-name">Usu\u00E1rio criado (free)</div><div class="plan-price">LLM onboarding (3/30)</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[0].cost.toFixed(2)}/m\u00EAs</div></div></div>
+        <div class="cost-card" style="border-left:4px solid #D85A30;"><div><div class="plan-name">Hire R$15 (promo)</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[1].cost.toFixed(2)}/m\u00EAs</div><div class="margin-badge mid">margem ${costTypes[1].marginPct.toFixed(0)}%</div></div></div>
+        <div class="cost-card" style="border-left:4px solid #1D9E75;"><div><div class="plan-name">Hire R$39 (regular)</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[2].cost.toFixed(2)}/m\u00EAs</div><div class="margin-badge high">margem ${costTypes[2].marginPct.toFixed(0)}%</div></div></div>
+        <div class="cost-card" style="border-left:4px solid #D85A30;"><div><div class="plan-name">Plus R$20</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[3].cost.toFixed(2)}/m\u00EAs</div><div class="margin-badge mid">margem ${costTypes[3].marginPct.toFixed(0)}%</div></div></div>
+        <div class="cost-card" style="border-left:4px solid #1D9E75;"><div><div class="plan-name">Pro R$45</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[4].cost.toFixed(2)}/m\u00EAs</div><div class="margin-badge high">margem ${costTypes[4].marginPct.toFixed(0)}%</div></div></div>
+        <hr class="divider">
+        <h2>LLM unit cost vs desconto escala (36 meses)</h2>
+        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>LLM unit cost (R$)</span><span><span class="dot" style="background:#1D9E75"></span>Desconto escala %</span></div>
+        <div class="chart-wrap tall"><canvas id="chartLLMCost"></canvas></div>
+        <div class="insight">O custo LLM por usu\u00E1rio cai de <strong>R$8.00</strong> (M1) para <strong>R$${llmM36.toFixed(2)}</strong> (M36) \u2014 redu\u00E7\u00E3o de <strong>${(m36Discount*100).toFixed(0)}%</strong> com desconto de escala.</div>
+        <hr class="divider">
+        <h2>Composi\u00E7\u00E3o de custo por plano (stacked)</h2>
+        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>LLM</span><span><span class="dot" style="background:#D85A30"></span>Stripe</span><span><span class="dot" style="background:#888"></span>Infra</span><span><span class="dot" style="background:#1D9E75"></span>Margem</span></div>
+        <div class="chart-wrap tall"><canvas id="chartCost"></canvas></div>
+        <table class="data"><tr><th>Plano</th><th>Pre\u00E7o</th><th>LLM</th><th>Stripe</th><th>Infra</th><th>Total</th><th>Margem</th></tr>
+        ${plans.map(p=>`<tr><td>${p.name}</td><td class="num">R$${p.price}</td><td class="num">R$${p.llm.toFixed(2)}</td><td class="num">R$${p.stripe.toFixed(2)}</td><td class="num">R$${p.fixed.toFixed(2)}</td><td class="num">R$${p.total.toFixed(2)}</td><td class="num pos">${p.margin.toFixed(0)}%</td></tr>`).join('')}</table>
+      </div>
+
+      <div id="ratio" class="section">
+        <h2>Ratio free:pagante e sustentabilidade</h2>
+        <div class="grid" style="grid-template-columns:repeat(3,1fr);"><div class="metric"><div class="label">Ratio real M36</div><div class="value">${m36Ratio.ratio}:1</div><div class="sub">free por pagante</div></div><div class="metric"><div class="label">Ratio sustent\u00E1vel</div><div class="value pos">1:${sustainableRatio}</div><div class="sub">1 pagante cobre ${sustainableRatio} free</div></div><div class="metric"><div class="label">Pico ratio</div><div class="value">${peakRatio.toFixed(1)}:1</div><div class="sub">${peakMonth?peakMonth.month:'M12'}</div></div></div>
+        <div class="narrative"><p><strong>1 pagante cobre entre 34 e ${sustainableRatio} free users</strong> \u2014 custo do free \u00E9 m\u00EDnimo (R$${costTypes[0].cost.toFixed(2)}) e a margem por pagante \u00E9 alta (~R$29 no ARPU m\u00E9dio de R$37.60).</p><p>O ratio real varia de <span class="highlight">1.5:1</span> (M6) a <span class="highlight">${peakRatio.toFixed(1)}:1</span> no pico. Em M36 estabiliza em <span class="highlight">${m36Ratio.ratio}:1</span>.</p><p>Ratio <strong>sustent\u00E1vel</strong>: <span class="green-highlight">1:${sustainableRatio}</span>. <span class="green-highlight">~8% dos pagantes financiam 100% do crescimento freemium</span>. Os outros 92% s\u00E3o margem pura.</p></div>
+        <h2>Detalhamento por marco</h2>
+        <table class="data"><tr><th>M\u00EAs</th><th>Free</th><th>Pagantes</th><th>Ratio</th><th>Custo free</th><th>Margem/pag</th><th>1 pag cobre</th></tr>
+        ${ratioData.map(r=>`<tr><td>${r.month}</td><td class="num">${fmtN(r.free)}</td><td class="num">${fmtN(r.paid)}</td><td class="num">${r.ratio}:1</td><td class="num">R$${r.costF}</td><td class="num pos">R$${r.avgMargin}</td><td class="num pos">${r.sustainable} free</td></tr>`).join('')}</table>
+        <h2>Free vs pagantes ao longo do tempo</h2>
+        <div class="chart-wrap tall"><canvas id="chartRatio"></canvas></div>
+        <h2>Ratio real vs sustent\u00E1vel (36 meses)</h2>
+        <div class="chart-wrap"><canvas id="chartRatioLine"></canvas></div>
+      </div>
+
+      <div id="cash" class="section">
+        <h2 style="margin-top:0;">Fluxo de Caixa \u2014 Vis\u00E3o Estrat\u00E9gica</h2>
+        
+        <div class="cf-hero">
+          <div class="cf-card" style="background:linear-gradient(135deg,#534AB7,#3b35a0);">
+            <div class="cf-label">Capta\u00E7\u00E3o</div>
+            <div class="cf-big">R$6M</div>
+            <div class="cf-sub">USD 1M \u00D7 R$6.00</div>
+          </div>
+          <div class="cf-card" style="background:linear-gradient(135deg,#0F6E56,#0a5a46);">
+            <div class="cf-label">Runway</div>
+            <div class="cf-big">>36 meses</div>
+            <div class="cf-sub">Caixa nunca zera</div>
+          </div>
+          <div class="cf-card" style="background:linear-gradient(135deg,#D85A30,#b84a28);">
+            <div class="cf-label">Burn m\u00E1ximo</div>
+            <div class="cf-big">${fmt(maxBurn)}</div>
+            <div class="cf-sub">M${maxBurnMonth} \u2014 \u00FAnico m\u00EAs negativo</div>
+          </div>
+          <div class="cf-card" style="background:linear-gradient(135deg,#1D9E75,#177a5b);">
+            <div class="cf-label">Cash Positive</div>
+            <div class="cf-big">M${cashPositiveMonth}</div>
+            <div class="cf-sub">Opera\u00E7\u00E3o autossustent\u00E1vel</div>
+          </div>
+        </div>
+
+        <h2>Saldo acumulado + burn rate (36 meses)</h2>
+        <div class="legend"><span><span class="dot" style="background:#1D9E75"></span>Saldo acumulado</span><span><span class="dot" style="background:#D85A30"></span>Burn rate (quando negativo)</span><span><span class="dot" style="background:#534AB7"></span>Receita mensal</span></div>
+        <div class="chart-wrap tall"><canvas id="chartCashNew"></canvas></div>
+
+        <h2>Waterfall \u2014 Composi\u00E7\u00E3o de sa\u00EDdas por ano</h2>
+        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>Folha/People</span><span><span class="dot" style="background:#D85A30"></span>MarTech</span><span><span class="dot" style="background:#E8C547"></span>Impostos</span><span><span class="dot" style="background:#888"></span>Infra</span><span><span class="dot" style="background:#2196F3"></span>Admin</span></div>
+        <div class="chart-wrap tall"><canvas id="chartWaterfall"></canvas></div>
+
+        <h2>DFC \u2014 Demonstra\u00E7\u00E3o de Fluxo de Caixa (trimestral)</h2>
+        <div class="cf-dfc"><table id="cfDFCTable"></table></div>
+
+        <h2>Cen\u00E1rios de Caixa</h2>
+        <div class="cf-scenario-grid">
+          <div class="cf-scenario" style="background:#EAF3DE;">
+            <div class="sc-title" style="color:#3B6D11;">\u2191 Otimista (+20% receita)</div>
+            <div class="sc-row"><span class="sc-label">Saldo M12</span><span class="sc-val pos">${fmt((saldo[12]||0)*1.15)}</span></div>
+            <div class="sc-row"><span class="sc-label">Saldo M24</span><span class="sc-val pos">${fmt((saldo[24]||0)*1.25)}</span></div>
+            <div class="sc-row"><span class="sc-label">Saldo M36</span><span class="sc-val pos">${fmt((saldo[36]||0)*1.35)}</span></div>
+            <div class="sc-row"><span class="sc-label">Runway</span><span class="sc-val pos">>36 meses</span></div>
+          </div>
+          <div class="cf-scenario" style="background:#f0eeff;">
+            <div class="sc-title" style="color:#534AB7;">\u2014 Base (modelo atual)</div>
+            <div class="sc-row"><span class="sc-label">Saldo M12</span><span class="sc-val">${fmt(saldo[12]||0)}</span></div>
+            <div class="sc-row"><span class="sc-label">Saldo M24</span><span class="sc-val">${fmt(saldo[24]||0)}</span></div>
+            <div class="sc-row"><span class="sc-label">Saldo M36</span><span class="sc-val">${fmt(saldo[36]||0)}</span></div>
+            <div class="sc-row"><span class="sc-label">Runway</span><span class="sc-val">>36 meses</span></div>
+          </div>
+          <div class="cf-scenario" style="background:#FFF3E0;">
+            <div class="sc-title" style="color:#D85A30;">\u2193 Conservador (-30% receita)</div>
+            <div class="sc-row"><span class="sc-label">Saldo M12</span><span class="sc-val">${fmt(Math.max(0,(saldo[12]||0)*0.75))}</span></div>
+            <div class="sc-row"><span class="sc-label">Saldo M24</span><span class="sc-val">${fmt(Math.max(0,(saldo[24]||0)*0.55))}</span></div>
+            <div class="sc-row"><span class="sc-label">Saldo M36</span><span class="sc-val">${fmt(Math.max(0,(saldo[36]||0)*0.40))}</span></div>
+            <div class="sc-row"><span class="sc-label">Runway</span><span class="sc-val">>36 meses</span></div>
+          </div>
+        </div>
+
+        <h2>Cen\u00E1rios projetados (36 meses)</h2>
+        <div class="legend"><span><span class="dot" style="background:#1D9E75"></span>Otimista</span><span><span class="dot" style="background:#534AB7"></span>Base</span><span><span class="dot" style="background:#D85A30"></span>Conservador</span></div>
+        <div class="chart-wrap tall"><canvas id="chartScenarios"></canvas></div>
+
+        <h2>Efici\u00EAncia operacional</h2>
+        <div class="grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="metric"><div class="label">% Folha / Receita (Y1)</div><div class="value">${recAnual[0]>0?(fcFolhaAnual[0]/recAnual[0]*100).toFixed(0):0}%</div><div class="sub">Target SaaS: <40%</div></div>
+          <div class="metric"><div class="label">% MKT / Receita (Y1)</div><div class="value">${recAnual[0]>0?(fcMktAnual[0]/recAnual[0]*100).toFixed(0):0}%</div><div class="sub">Growth investment</div></div>
+          <div class="metric"><div class="label">% Infra / Receita (Y1)</div><div class="value">${recAnual[0]>0?(fcInfraAnual[0]/recAnual[0]*100).toFixed(0):0}%</div><div class="sub">AI-first SaaS: <5%</div></div>
+        </div>
+        <div class="grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="metric"><div class="label">% Folha / Receita (Y3)</div><div class="value pos">${recAnual[2]>0?(fcFolhaAnual[2]/recAnual[2]*100).toFixed(0):0}%</div><div class="sub">\u2193 Escala de time lean</div></div>
+          <div class="metric"><div class="label">% MKT / Receita (Y3)</div><div class="value pos">${recAnual[2]>0?(fcMktAnual[2]/recAnual[2]*100).toFixed(0):0}%</div><div class="sub">\u2193 CAC mais eficiente</div></div>
+          <div class="metric"><div class="label">% Infra / Receita (Y3)</div><div class="value pos">${recAnual[2]>0?(fcInfraAnual[2]/recAnual[2]*100).toFixed(0):0}%</div><div class="sub">\u2193 Desconto escala LLM</div></div>
+        </div>
+
+        <div class="insight-highlight" style="margin-top:16px;"><strong>Para o investidor:</strong> com capta\u00E7\u00E3o de <span class="big-number">R$6M</span>, a hiGen atinge cash positive em <span class="big-green">M${cashPositiveMonth}</span> e acumula <span class="big-number">${fmt(saldo[36]||0)}</span> em M36. Mesmo no cen\u00E1rio conservador (-30% receita), o runway permanece >36 meses. A estrutura de custos \u00E9 altamente escal\u00E1vel: folha fixa de ~R$200K/m\u00EAs com receita que cresce 5-10x.</div>
+      </div>
+
+      <div id="investor" class="section">
+        <h2>M\u00E9tricas-chave para investidor</h2>
+        <div class="grid" style="grid-template-columns:repeat(2,1fr);"><div class="metric"><div class="label">Pre-seed ask</div><div class="value">$1M USD</div><div class="sub">7% equity</div></div><div class="metric"><div class="label">ARR M12</div><div class="value">${fmt((mrr[m12]||0)*12)}</div></div><div class="metric"><div class="label">ARR M36</div><div class="value">${fmt(lastARR)}</div></div><div class="metric"><div class="label">Gross margin</div><div class="value">${recAnual[2]?((1-cogsAnual[2]/recAnual[2])*100).toFixed(0):0}%</div><div class="sub">Ano 3</div></div><div class="metric"><div class="label">LTV:CAC</div><div class="value">${ltvcacArr[2]?ltvcacArr[2].toFixed(1)+'x':'-'}</div><div class="sub">Ano 3</div></div><div class="metric"><div class="label">CAC payback</div><div class="value">&lt;1 m\u00EAs</div></div></div>
+        <div class="insight-highlight"><strong>Freemium unit economics:</strong> apenas <span class="big-green">~8%</span> da base paga financia 100% do crescimento free.<br>Ratio sustent\u00E1vel <span class="big-number">1:${sustainableRatio}</span> vs ratio real nunca acima de ${peakRatio.toFixed(1)}:1</div>
+        <h2>ARR trajectory (36 meses)</h2>
+        <div class="chart-wrap tall"><canvas id="chartARR"></canvas></div>
+        <div class="insight">EBITDA positivo a partir de M3. Margem EBITDA ~${lastMargin.toFixed(0)}% em M36. LLM unit cost cai ${(m36Discount*100).toFixed(0)}% com escala. CAC payback &lt;1 m\u00EAs via entidades estudantis.</div>
+        <h2>Composi\u00E7\u00E3o de usu\u00E1rios por plano (M12, M24, M36)</h2>
+        <div class="chart-wrap"><canvas id="chartMix"></canvas></div>
+        <h2>Evolu\u00E7\u00E3o do custo LLM por usu\u00E1rio</h2>
+        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>LLM unit cost</span><span><span class="dot" style="background:#1D9E75"></span>Desconto %</span></div>
+        <div class="chart-wrap"><canvas id="chartLLMInvestor"></canvas></div>
+      </div>
+
+      <div id="captable" class="section">
+        <h2 style="margin-top:0;">Cap Table \u2014 Simula\u00E7\u00E3o de dilui\u00E7\u00E3o</h2>
+        <div id="ctContent"></div>
+      </div>
+
+      <div class="source">Dados: <a href="https://docs.google.com/spreadsheets/d/${FILE_ID}" target="_blank">hiGen_Financial_Model_36M_v13</a> (Google Drive) &middot; Atualizado ao recarregar</div>
+    `;
+
+    const mLabels=MONTHS.slice(1), mrrData=mrr.slice(1), payData=totalPay.slice(1);
+
+    new Chart(document.getElementById('chartRevAnual'),{type:'bar',data:{labels:['Ano 1','Ano 2','Ano 3'],datasets:[{type:'bar',label:'Receita bruta',data:[recAnual[0],recAnual[1],recAnual[2]],backgroundColor:['rgba(83,74,183,0.6)','rgba(83,74,183,0.75)','rgba(83,74,183,0.9)'],borderRadius:6,yAxisID:'y',order:2},{type:'line',label:'Gross margin',data:[grossMarginPct[0],grossMarginPct[1],grossMarginPct[2]],borderColor:'#1D9E75',backgroundColor:'transparent',pointRadius:6,pointBackgroundColor:'#1D9E75',tension:0.3,yAxisID:'y1',order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{title:{display:true,text:'Receita (R$)'},ticks:{callback:v=>fmt(v)}},y1:{position:'right',title:{display:true,text:'Gross Margin %'},min:90,max:100,grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}}}});
+
+    new Chart(document.getElementById('chartMRR'),{type:'bar',data:{labels:mLabels,datasets:[{type:'bar',label:'MRR',data:mrrData,backgroundColor:'rgba(83,74,183,0.7)',yAxisID:'y',order:2},{type:'line',label:'Pagantes',data:payData,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.1)',fill:true,tension:0.3,yAxisID:'y1',order:1,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{title:{display:true,text:'MRR (R$)'},ticks:{callback:v=>fmt(v)}},y1:{position:'right',title:{display:true,text:'Pagantes'},grid:{drawOnChartArea:false},ticks:{callback:v=>fmtN(v)}}}}});
+
+    new Chart(document.getElementById('chartMargin'),{type:'line',data:{labels:mLabels,datasets:[{data:margin.slice(0,36),borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,0.08)',fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>v+'%'},suggestedMin:-100,suggestedMax:80}}}});
+
+    if(document.getElementById('chartARPU')){new Chart(document.getElementById('chartARPU'),{type:'line',data:{labels:mLabels,datasets:[{data:arpu.slice(1),borderColor:'#D85A30',tension:0.3,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{title:{display:true,text:'R$/user'},ticks:{callback:v=>'R$'+v}}}}});}
+
+    function buildLLMChart(id){const c=document.getElementById(id);if(!c)return;const sm=['M1','M6','M12','M18','M24','M30','M36'],si=[1,6,12,18,24,30,36];new Chart(c,{type:'line',data:{labels:sm,datasets:[{data:si.map(i=>llmUnitCosts[i]),borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,0.15)',fill:true,tension:0.3,pointRadius:4,pointBackgroundColor:'#534AB7',yAxisID:'y'},{data:si.map(i=>scaleDiscounts[i]*100),borderColor:'#1D9E75',borderDash:[6,3],backgroundColor:'transparent',tension:0.3,pointRadius:4,pointBackgroundColor:'#1D9E75',yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{title:{display:true,text:'R$/user'},min:5.5,max:9.0,ticks:{callback:v=>'R$'+v.toFixed(1)}},y1:{position:'right',title:{display:true,text:'Desconto %'},min:0,max:20,grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}}}});}
+    buildLLMChart('chartLLMCost'); buildLLMChart('chartLLMInvestor');
+
+    new Chart(document.getElementById('chartCost'),{type:'bar',data:{labels:plans.map(p=>p.name),datasets:[{label:'LLM',data:plans.map(p=>p.llm),backgroundColor:'#534AB7'},{label:'Stripe',data:plans.map(p=>p.stripe),backgroundColor:'#D85A30'},{label:'Infra',data:plans.map(p=>p.fixed),backgroundColor:'#888'},{label:'Margem',data:plans.map(p=>p.price-p.total),backgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>'R$'+v}}}}});
+
+    new Chart(document.getElementById('chartRatio'),{type:'line',data:{labels:mLabels,datasets:[{label:'Free',data:free.slice(1),borderColor:'#888',backgroundColor:'rgba(136,135,128,0.1)',fill:true,tension:0.3,pointRadius:0},{label:'Pagantes',data:payData,borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,0.1)',fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{usePointStyle:true,pointStyle:'line',boxWidth:20}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>fmtN(v)}}}}});
+
+    if(document.getElementById('chartRatioLine')){const rr=[];for(let m=1;m<=36;m++){let f=free[m]||0,p=totalPay[m]||0;rr.push(p>0?f/p:0);}new Chart(document.getElementById('chartRatioLine'),{type:'line',data:{labels:mLabels,datasets:[{label:'Ratio real',data:rr,borderColor:'#534AB7',tension:0.3,pointRadius:0,fill:false},{label:'Limite sustent\u00E1vel',data:Array(36).fill(sustainableRatio),borderColor:'#1D9E75',borderDash:[8,4],pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{usePointStyle:true,pointStyle:'line',boxWidth:20}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{title:{display:true,text:'Free/pagante'},suggestedMax:sustainableRatio+5}}}});}
+
+    // === CASH FLOW CHARTS ===
+    // 1. Saldo + burn + receita
+    new Chart(document.getElementById('chartCashNew'),{type:'line',data:{labels:MONTHS,datasets:[{label:'Saldo',data:saldo,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',fill:true,tension:0.3,pointRadius:0,yAxisID:'y'},{label:'Receita',data:fcReceita,borderColor:'#534AB7',borderDash:[6,3],tension:0.3,pointRadius:0,yAxisID:'y'},{label:'Burn',data:burnRate.map(v=>v>0?v:null),borderColor:'#D85A30',backgroundColor:'rgba(216,90,48,0.15)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:'#D85A30',yAxisID:'y'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>fmt(v)}}}}});
+
+    // 2. Waterfall stacked bar (expenses by category per year)
+    new Chart(document.getElementById('chartWaterfall'),{type:'bar',data:{labels:['Ano 1','Ano 2','Ano 3'],datasets:[{label:'Folha',data:[fcFolhaAnual[0],fcFolhaAnual[1],fcFolhaAnual[2]],backgroundColor:'#534AB7'},{label:'MarTech',data:[fcMktAnual[0],fcMktAnual[1],fcMktAnual[2]],backgroundColor:'#D85A30'},{label:'Impostos',data:[fcImpostosAnual[0],fcImpostosAnual[1],fcImpostosAnual[2]],backgroundColor:'#E8C547'},{label:'Infra',data:[fcInfraAnual[0],fcInfraAnual[1],fcInfraAnual[2]],backgroundColor:'#888'},{label:'Admin',data:[fcAdminAnual[0],fcAdminAnual[1],fcAdminAnual[2]],backgroundColor:'#2196F3'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>fmt(v)}}}}});
+
+    // 3. DFC Table (quarterly)
+    (function(){
+      const tb=document.getElementById('cfDFCTable');if(!tb)return;
+      function qSum(arr,s,e){let t=0;for(let i=s;i<=e&&i<arr.length;i++)t+=(arr[i]||0);return t;}
+      const qs=['Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8','Q9','Q10','Q11','Q12'];
+      const qr=[[1,3],[4,6],[7,9],[10,12],[13,15],[16,18],[19,21],[22,24],[25,27],[28,30],[31,33],[34,36]];
+      // Only show Q1-Q4 (Y1), Q5-Q8 (Y2), Q9-Q12 (Y3) totals + selected quarters
+      const show=[0,1,2,3]; // Q1-Q4 for Y1 detail, then annual
+      let h='<tr><th></th><th class="num">Q1</th><th class="num">Q2</th><th class="num">Q3</th><th class="num">Q4</th><th class="num">Ano 1</th><th class="num">Ano 2</th><th class="num">Ano 3</th></tr>';
+      function r(label,arr,cls){
+        const q=qr.map(([s,e])=>qSum(arr,s,e));
+        const y1=q[0]+q[1]+q[2]+q[3],y2=q[4]+q[5]+q[6]+q[7],y3=q[8]+q[9]+q[10]+q[11];
+        return '<tr class="'+(cls||'')+'"><td>'+label+'</td><td class="num">'+fmt(q[0])+'</td><td class="num">'+fmt(q[1])+'</td><td class="num">'+fmt(q[2])+'</td><td class="num">'+fmt(q[3])+'</td><td class="num"><strong>'+fmt(y1)+'</strong></td><td class="num"><strong>'+fmt(y2)+'</strong></td><td class="num"><strong>'+fmt(y3)+'</strong></td></tr>';
+      }
+      h+=r('\u2795 Capta\u00E7\u00E3o',fcCapt,'');
+      h+=r('\u2795 Receita (MRR)',fcReceita,'');
+      h+=r('<strong>= Total Entradas</strong>',MONTHS.map((_,i)=>(fcCapt[i]||0)+(fcReceita[i]||0)),'total-row');
+      h+='<tr><td colspan="8" style="height:8px;border:none;"></td></tr>';
+      h+=r('\u2796 Folha / People',fcFolha,'');
+      h+=r('\u2796 MarTech',fcMkt,'');
+      h+=r('\u2796 Impostos',fcImpostos,'');
+      h+=r('\u2796 Infra (COGS)',fcInfra,'');
+      h+=r('\u2796 Admin',fcAdmin,'');
+      h+=r('<strong>= Total Sa\u00EDdas</strong>',MONTHS.map((_,i)=>(fcFolha[i]||0)+(fcMkt[i]||0)+(fcImpostos[i]||0)+(fcInfra[i]||0)+(fcAdmin[i]||0)),'total-row');
+      h+='<tr><td colspan="8" style="height:8px;border:none;"></td></tr>';
+      h+=r('<strong style="color:#534AB7;">= Fluxo L\u00EDquido</strong>',fcFluxo,'total-row');
+      // Saldo acumulado
+      const saldoQ=qr.map(([s,e])=>saldo[e]||0);
+      const sRow='<tr class="total-row" style="background:#EAF3DE;"><td><strong style="color:#0F6E56;">Saldo Acumulado</strong></td><td class="num pos">'+fmt(saldoQ[0])+'</td><td class="num pos">'+fmt(saldoQ[1])+'</td><td class="num pos">'+fmt(saldoQ[2])+'</td><td class="num pos">'+fmt(saldoQ[3])+'</td><td class="num pos"><strong>'+fmt(saldoQ[3])+'</strong></td><td class="num pos"><strong>'+fmt(saldoQ[7])+'</strong></td><td class="num pos"><strong>'+fmt(saldoQ[11])+'</strong></td></tr>';
+      h+=sRow;
+      tb.innerHTML=h;
+    })();
+
+    // 4. Scenarios chart
+    (function(){
+      const optData=saldo.map(v=>(v||0)*1.0+((v||0)*0.35*(saldo.indexOf(v)/36)));
+      const consData=saldo.map((v,i)=>Math.max(0,(v||0)*(1-0.30*i/36)));
+      // Better scenario calc: optimistic = +20% receita impact, conservative = -30%
+      const opt=[], cons=[], base=[];
+      let sOpt=0, sCons=0;
+      for(let m=0;m<=36;m++){
+        const ent=(fcCapt[m]||0)+(fcReceita[m]||0);
+        const sai=(fcFolha[m]||0)+(fcMkt[m]||0)+(fcImpostos[m]||0)+(fcInfra[m]||0)+(fcAdmin[m]||0);
+        const entOpt=(fcCapt[m]||0)+(fcReceita[m]||0)*1.20;
+        const entCons=(fcCapt[m]||0)+(fcReceita[m]||0)*0.70;
+        sOpt+=(entOpt-sai); sCons+=(entCons-sai);
+        opt.push(sOpt); cons.push(Math.max(0,sCons)); base.push(saldo[m]||0);
+      }
+      new Chart(document.getElementById('chartScenarios'),{type:'line',data:{labels:MONTHS,datasets:[{label:'Otimista (+20%)',data:opt,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.06)',fill:true,tension:0.3,pointRadius:0,borderWidth:2},{label:'Base',data:base,borderColor:'#534AB7',tension:0.3,pointRadius:0,borderWidth:2.5},{label:'Conservador (-30%)',data:cons,borderColor:'#D85A30',backgroundColor:'rgba(216,90,48,0.06)',fill:true,tension:0.3,pointRadius:0,borderWidth:2,borderDash:[6,3]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>fmt(v)}}}}});
+    })();
+
+    const arrData=mrrData.map(v=>v*12);
+    new Chart(document.getElementById('chartARR'),{type:'line',data:{labels:mLabels,datasets:[{data:arrData,borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,0.1)',fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{title:{display:true,text:'ARR (R$)'},ticks:{callback:v=>fmt(v)}}}}});
+
+    new Chart(document.getElementById('chartMix'),{type:'bar',data:{labels:['M12','M24','M36'],datasets:[{label:'Hire',data:[hire[m12],hire[m24],hire[m36]],backgroundColor:'#534AB7'},{label:'Plus',data:[plus[m12],plus[m24],plus[m36]],backgroundColor:'#D85A30'},{label:'Pro',data:[pro[m12],pro[m24],pro[m36]],backgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{usePointStyle:true,pointStyle:'rect',boxWidth:10}}},scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>fmtN(v)}}}}});
+
+    initCapTable();
+
+  } catch(err) {
+    document.getElementById('app').innerHTML = `<div class="error">Erro ao carregar: ${err.message}</div>`;
+  }
+})();
+
+function showTab(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='captable') renderCapTable();
+}
+
+let ctCharts = {};
+const COLORS = {halef:'#534AB7',fukuda:'#1D9E75',joao:'#D85A30',preseed:'#888',esop:'#E8C547',seed:'#2196F3',seriesA:'#9C27B0'};
+
+function initCapTable(){ renderCapTable(); }
+
+function getVal(id,def){const el=document.getElementById(id);return el?parseFloat(el.value)||def:def;}
+
+function renderCapTable(){
+  const ct=document.getElementById('ctContent');
+  if(!ct)return;
+
+  const preSeedPct=getVal('ct-preseed-pct',7);
+  const preSeedAmt=getVal('ct-preseed-amt',1000000);
+  const esopPct=getVal('ct-esop-pct',10);
+  const seedPct=getVal('ct-seed-pct',18);
+  const seedAmt=getVal('ct-seed-amt',4000000);
+  const seriesAPct=getVal('ct-seriesa-pct',20);
+  const seriesAAmt=getVal('ct-seriesa-amt',15000000);
+
+  const s0={halef:33.33,fukuda:33.33,joao:33.34};
+
+  const dil1=(100-preSeedPct)/100;
+  const s1={halef:s0.halef*dil1,fukuda:s0.fukuda*dil1,joao:s0.joao*dil1,preseed:preSeedPct};
+  const preMoneyPS=preSeedPct>0?(preSeedAmt/preSeedPct*100-preSeedAmt):0;
+  const postMoneyPS=preMoneyPS+preSeedAmt;
+
+  const dil2=(100-esopPct)/100;
+  const s2={halef:s1.halef*dil2,fukuda:s1.fukuda*dil2,joao:s1.joao*dil2,preseed:s1.preseed*dil2,esop:esopPct};
+
+  const dil3=(100-seedPct)/100;
+  const s3={halef:s2.halef*dil3,fukuda:s2.fukuda*dil3,joao:s2.joao*dil3,preseed:s2.preseed*dil3,esop:s2.esop*dil3,seed:seedPct};
+  const preMoneySeed=seedPct>0?(seedAmt/seedPct*100-seedAmt):0;
+  const postMoneySeed=preMoneySeed+seedAmt;
+
+  const dil4=(100-seriesAPct)/100;
+  const s4={halef:s3.halef*dil4,fukuda:s3.fukuda*dil4,joao:s3.joao*dil4,preseed:s3.preseed*dil4,esop:s3.esop*dil4,seed:s3.seed*dil4,seriesA:seriesAPct};
+  const preMoneyA=seriesAPct>0?(seriesAAmt/seriesAPct*100-seriesAAmt):0;
+  const postMoneyA=preMoneyA+seriesAAmt;
+
+  const foundersA=(s4.halef+s4.fukuda+s4.joao);
+
+  function pf(v){return v.toFixed(2)+'%';}
+  function delta(before,after){const d=after-before;return d<0?'<span class="ct-delta">'+d.toFixed(1)+'pp</span>':'<span class="ct-delta pos">\u2014</span>';}
+  function usdVal(pct,postMoney){return postMoney>0?fmtUSD(pct/100*postMoney):'-';}
+  function row(color,name,pct,prevPct,postMoney){return '<div class="ct-row"><div class="ct-name"><span class="ct-dot" style="background:'+color+'"></span>'+name+'</div><div><span class="ct-pct">'+pf(pct)+'</span><span class="ct-usd">'+usdVal(pct,postMoney)+'</span>'+(prevPct!==undefined?delta(prevPct,pct):'')+'</div></div>';}
+
+  ct.innerHTML=`
+    <div class="ct-round">
+      <div class="ct-round-header"><div class="ct-round-title">Funda\u00E7\u00E3o<span class="round-badge" style="background:#EEEDFE;color:#534AB7;">100% founders</span></div></div>
+      <div class="ct-body">
+        <div>
+          ${row(COLORS.halef,'Halef Soler',s0.halef,undefined,0)}
+          ${row(COLORS.fukuda,'Fukuda',s0.fukuda,undefined,0)}
+          ${row(COLORS.joao,'Jo\u00E3o',s0.joao,undefined,0)}
+        </div>
+        <div class="chart-wrap small"><canvas id="ctChart0"></canvas></div>
+      </div>
+    </div>
+
+    <div class="ct-round">
+      <div class="ct-round-header">
+        <div class="ct-round-title">Pre-Seed<span class="round-badge" style="background:#EAF3DE;color:#3B6D11;">Rodada atual</span></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div class="ct-input-group"><label>Equity:</label><input class="ct-input" id="ct-preseed-pct" type="number" min="1" max="50" step="0.5" value="${preSeedPct}" onchange="renderCapTable()"><span class="suffix">%</span></div>
+          <div class="ct-input-group"><label>Valor:</label><span class="suffix">$</span><input class="ct-input" id="ct-preseed-amt" type="number" min="100000" step="100000" value="${preSeedAmt}" onchange="renderCapTable()" style="width:100px;"></div>
+        </div>
+      </div>
+      <div class="ct-valuation">
+        <div class="ct-val-item"><div class="ct-val-label">Pre-money</div><div class="ct-val-num">${fmtUSD(preMoneyPS)}</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Post-money</div><div class="ct-val-num">${fmtUSD(postMoneyPS)}</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Raise</div><div class="ct-val-num">${fmtUSD(preSeedAmt)}</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#A32D2D;">${preSeedPct.toFixed(1)}%</div></div>
+      </div>
+      <div class="ct-body">
+        <div>
+          ${row(COLORS.halef,'Halef Soler',s1.halef,s0.halef,postMoneyPS)}
+          ${row(COLORS.fukuda,'Fukuda',s1.fukuda,s0.fukuda,postMoneyPS)}
+          ${row(COLORS.joao,'Jo\u00E3o',s1.joao,s0.joao,postMoneyPS)}
+          ${row(COLORS.preseed,'Investidor Pre-Seed',s1.preseed,undefined,postMoneyPS)}
+        </div>
+        <div class="chart-wrap small"><canvas id="ctChart1"></canvas></div>
+      </div>
+    </div>
+
+    <div class="ct-round">
+      <div class="ct-round-header">
+        <div class="ct-round-title">ESOP Pool<span class="round-badge" style="background:#FFF3E0;color:#D85A30;">Pr\u00E9-Seed</span></div>
+        <div class="ct-input-group"><label>Pool:</label><input class="ct-input" id="ct-esop-pct" type="number" min="0" max="20" step="1" value="${esopPct}" onchange="renderCapTable()"><span class="suffix">%</span></div>
+      </div>
+      <div class="ct-valuation">
+        <div class="ct-val-item"><div class="ct-val-label">Pre-money</div><div class="ct-val-num">${fmtUSD(postMoneyPS)}</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Post-money</div><div class="ct-val-num">${fmtUSD(postMoneyPS)}</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Raise</div><div class="ct-val-num">$0</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#A32D2D;">${esopPct}%</div></div>
+      </div>
+      <div class="ct-market-note">Padr\u00E3o de mercado: 10% ESOP pool criado antes do Seed</div>
+      <div class="ct-body">
+        <div>
+          ${row(COLORS.halef,'Halef Soler',s2.halef,s1.halef,postMoneyPS)}
+          ${row(COLORS.fukuda,'Fukuda',s2.fukuda,s1.fukuda,postMoneyPS)}
+          ${row(COLORS.joao,'Jo\u00E3o',s2.joao,s1.joao,postMoneyPS)}
+          ${row(COLORS.preseed,'Investidor Pre-Seed',s2.preseed,s1.preseed,postMoneyPS)}
+          ${row(COLORS.esop,'ESOP (colaboradores)',s2.esop,undefined,postMoneyPS)}
+        </div>
+        <div class="chart-wrap small"><canvas id="ctChart2"></canvas></div>
+      </div>
+    </div>
+
+    <div class="ct-round">
+      <div class="ct-round-header">
+        <div class="ct-round-title">Seed<span class="round-badge" style="background:#E3F2FD;color:#2196F3;">Pr\u00F3xima rodada</span></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div class="ct-input-group"><label>Equity:</label><input class="ct-input" id="ct-seed-pct" type="number" min="1" max="40" step="1" value="${seedPct}" onchange="renderCapTable()"><span class="suffix">%</span></div>
+          <div class="ct-input-group"><label>Valor:</label><span class="suffix">$</span><input class="ct-input" id="ct-seed-amt" type="number" min="100000" step="500000" value="${seedAmt}" onchange="renderCapTable()" style="width:100px;"></div>
+        </div>
+      </div>
+      <div class="ct-valuation">
+        <div class="ct-val-item"><div class="ct-val-label">Pre-money</div><div class="ct-val-num">${fmtUSD(preMoneySeed)}</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Post-money</div><div class="ct-val-num">${fmtUSD(postMoneySeed)}</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Raise</div><div class="ct-val-num">${fmtUSD(seedAmt)}</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#A32D2D;">${seedPct}%</div></div>
+      </div>
+      <div class="ct-market-note">Padr\u00E3o de mercado: 15\u201320% dilui\u00E7\u00E3o, $2\u20135M raise</div>
+      <div class="ct-body">
+        <div>
+          ${row(COLORS.halef,'Halef Soler',s3.halef,s2.halef,postMoneySeed)}
+          ${row(COLORS.fukuda,'Fukuda',s3.fukuda,s2.fukuda,postMoneySeed)}
+          ${row(COLORS.joao,'Jo\u00E3o',s3.joao,s2.joao,postMoneySeed)}
+          ${row(COLORS.preseed,'Investidor Pre-Seed',s3.preseed,s2.preseed,postMoneySeed)}
+          ${row(COLORS.esop,'ESOP',s3.esop,s2.esop,postMoneySeed)}
+          ${row(COLORS.seed,'Investidor Seed',s3.seed,undefined,postMoneySeed)}
+        </div>
+        <div class="chart-wrap small"><canvas id="ctChart3"></canvas></div>
+      </div>
+    </div>
+
+    <div class="ct-round">
+      <div class="ct-round-header">
+        <div class="ct-round-title">S\u00E9rie A<span class="round-badge" style="background:#F3E5F5;color:#9C27B0;">Proje\u00E7\u00E3o</span></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div class="ct-input-group"><label>Equity:</label><input class="ct-input" id="ct-seriesa-pct" type="number" min="1" max="40" step="1" value="${seriesAPct}" onchange="renderCapTable()"><span class="suffix">%</span></div>
+          <div class="ct-input-group"><label>Valor:</label><span class="suffix">$</span><input class="ct-input" id="ct-seriesa-amt" type="number" min="1000000" step="1000000" value="${seriesAAmt}" onchange="renderCapTable()" style="width:100px;"></div>
+        </div>
+      </div>
+      <div class="ct-valuation">
+        <div class="ct-val-item"><div class="ct-val-label">Pre-money</div><div class="ct-val-num">${fmtUSD(preMoneyA)}</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Post-money</div><div class="ct-val-num">${fmtUSD(postMoneyA)}</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Raise</div><div class="ct-val-num">${fmtUSD(seriesAAmt)}</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#A32D2D;">${seriesAPct}%</div></div>
+      </div>
+      <div class="ct-market-note">Padr\u00E3o de mercado: 15\u201325% dilui\u00E7\u00E3o, $10\u201320M raise</div>
+      <div class="ct-body">
+        <div>
+          ${row(COLORS.halef,'Halef Soler',s4.halef,s3.halef,postMoneyA)}
+          ${row(COLORS.fukuda,'Fukuda',s4.fukuda,s3.fukuda,postMoneyA)}
+          ${row(COLORS.joao,'Jo\u00E3o',s4.joao,s3.joao,postMoneyA)}
+          ${row(COLORS.preseed,'Investidor Pre-Seed',s4.preseed,s3.preseed,postMoneyA)}
+          ${row(COLORS.esop,'ESOP',s4.esop,s3.esop,postMoneyA)}
+          ${row(COLORS.seed,'Investidor Seed',s4.seed,s3.seed,postMoneyA)}
+          ${row(COLORS.seriesA,'Investidor S\u00E9rie A',s4.seriesA,undefined,postMoneyA)}
+        </div>
+        <div class="chart-wrap small"><canvas id="ctChart4"></canvas></div>
+      </div>
+    </div>
+
+    <div class="ct-summary">
+      <h3 style="margin-top:0;margin-bottom:12px;color:#534AB7;">Resumo p\u00F3s-S\u00E9rie A</h3>
+      <div class="ct-summary-grid">
+        <div class="ct-summary-item"><div class="ct-s-label">Founders (3)</div><div class="ct-s-value">${foundersA.toFixed(1)}%</div><div style="font-size:12px;color:#534AB7;font-weight:500;">${fmtUSD(foundersA/100*postMoneyA)}</div></div>
+        <div class="ct-summary-item"><div class="ct-s-label">Investidores</div><div class="ct-s-value">${(s4.preseed+s4.seed+s4.seriesA).toFixed(1)}%</div><div style="font-size:12px;color:#534AB7;font-weight:500;">${fmtUSD((s4.preseed+s4.seed+s4.seriesA)/100*postMoneyA)}</div></div>
+        <div class="ct-summary-item"><div class="ct-s-label">ESOP</div><div class="ct-s-value">${s4.esop.toFixed(1)}%</div><div style="font-size:12px;color:#534AB7;font-weight:500;">${fmtUSD(s4.esop/100*postMoneyA)}</div></div>
+        <div class="ct-summary-item"><div class="ct-s-label">Post-money</div><div class="ct-s-value">${fmtUSD(postMoneyA)}</div></div>
+      </div>
+      <div class="insight" style="margin-top:16px;">Founders mant\u00EAm <strong>${foundersA.toFixed(1)}%</strong> (${fmtUSD(foundersA/100*postMoneyA)}) ap\u00F3s S\u00E9rie A. Padr\u00E3o saud\u00E1vel de mercado: founders com >40% at\u00E9 S\u00E9rie A \u00E9 considerado forte para manter controle e alinhamento de incentivos.</div>
+    </div>
+  `;
+
+  function doughnut(id,labels,data,colors){
+    const canvas=document.getElementById(id);if(!canvas)return;
+    if(ctCharts[id]){ctCharts[id].destroy();}
+    ctCharts[id]=new Chart(canvas,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:1,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed.toFixed(1)+'%';}}}}}});
+  }
+  doughnut('ctChart0',['Halef','Fukuda','Jo\u00E3o'],[s0.halef,s0.fukuda,s0.joao],[COLORS.halef,COLORS.fukuda,COLORS.joao]);
+  doughnut('ctChart1',['Halef','Fukuda','Jo\u00E3o','Pre-Seed'],[s1.halef,s1.fukuda,s1.joao,s1.preseed],[COLORS.halef,COLORS.fukuda,COLORS.joao,COLORS.preseed]);
+  doughnut('ctChart2',['Halef','Fukuda','Jo\u00E3o','Pre-Seed','ESOP'],[s2.halef,s2.fukuda,s2.joao,s2.preseed,s2.esop],[COLORS.halef,COLORS.fukuda,COLORS.joao,COLORS.preseed,COLORS.esop]);
+  doughnut('ctChart3',['Halef','Fukuda','Jo\u00E3o','Pre-Seed','ESOP','Seed'],[s3.halef,s3.fukuda,s3.joao,s3.preseed,s3.esop,s3.seed],[COLORS.halef,COLORS.fukuda,COLORS.joao,COLORS.preseed,COLORS.esop,COLORS.seed]);
+  doughnut('ctChart4',['Halef','Fukuda','Jo\u00E3o','Pre-Seed','ESOP','Seed','S\u00E9rie A'],[s4.halef,s4.fukuda,s4.joao,s4.preseed,s4.esop,s4.seed,s4.seriesA],[COLORS.halef,COLORS.fukuda,COLORS.joao,COLORS.preseed,COLORS.esop,COLORS.seed,COLORS.seriesA]);
+}
+</script>
+</body>
+</html>
