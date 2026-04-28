@@ -165,6 +165,21 @@ function fmtN(n) { if(Math.abs(n)>=1e6)return(n/1e6).toFixed(1)+'M'; if(Math.abs
 function findRow(lines,kw) { for(let i=0;i<lines.length;i++){if(lines[i].includes(kw))return lines[i];} return null; }
 function extractMonthlyValues(line,si) { let c=parseRow(line); return c.slice(si).map(parseBRL); }
 
+let ctCharts = {};
+const COLORS = {halef:'#534AB7',fukuda:'#1D9E75',joao:'#D85A30',preseed:'#888',esop:'#E8C547',seed:'#2196F3',seriesA:'#9C27B0'};
+
+function initCapTable(){ renderCapTable(); }
+
+function getVal(id,def){const el=document.getElementById(id);return el?parseFloat(el.value)||def:def;}
+
+function showTab(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='captable') renderCapTable();
+}
+
 (async function() {
   try {
     // Dados embutidos do Google Drive (snapshot Abril/2026)
@@ -1040,20 +1055,9 @@ function extractMonthlyValues(line,si) { let c=parseRow(line); return c.slice(si
   }
 })();
 
-function showTab(id,btn){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  btn.classList.add('active');
-  if(id==='captable') renderCapTable();
-}
 
-let ctCharts = {};
-const COLORS = {halef:'#534AB7',fukuda:'#1D9E75',joao:'#D85A30',preseed:'#888',esop:'#E8C547',seed:'#2196F3',seriesA:'#9C27B0'};
 
-function initCapTable(){ renderCapTable(); }
 
-function getVal(id,def){const el=document.getElementById(id);return el?parseFloat(el.value)||def:def;}
 
 function renderCapTable(){
   const ct=document.getElementById('ctContent');
