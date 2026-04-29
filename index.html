@@ -3,69 +3,72 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>hiGen Financial Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
 :root { color-scheme: light; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #1a1a1a; padding: 20px; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #F5F5F5; color: #1A1A1A; padding: 20px; }
 .loading { text-align: center; padding: 60px 20px; color: #888; }
-.loading .spinner { width: 32px; height: 32px; border: 3px solid #eee; border-top-color: #534AB7; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+.loading .spinner { width: 32px; height: 32px; border: 3px solid #eee; border-top-color: #6366F1; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .error { background: #fcebeb; color: #791f1f; padding: 16px; border-radius: 8px; margin: 20px 0; }
 .nav { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-.nav button { padding: 8px 16px; border: 1px solid #d3d1c7; background: #fff; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; }
-.nav button:hover { background: #f1efe8; }
-.nav button.active { background: #534AB7; color: #fff; border-color: #534AB7; }
+.nav button { padding: 8px 16px; border: 1px solid #E5E5E5; background: #fff; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s; color: #1A1A1A; }
+.nav button:hover { background: #F5F5F5; }
+.nav button.active { background: linear-gradient(135deg, #E94B8C, #FF8A5C); color: #fff; border-color: transparent; }
 .section { display: none; }
 .section.active { display: block; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
-.metric { background: #f8f7f4; border-radius: 8px; padding: 14px; }
-.metric .label { font-size: 12px; color: #888; margin-bottom: 4px; }
-.metric .value { font-size: 22px; font-weight: 500; }
-.metric .sub { font-size: 11px; color: #888; margin-top: 2px; }
+.metric { background: #fff; border-radius: 10px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.metric .label { font-size: 12px; color: #A0A0A0; margin-bottom: 4px; }
+.metric .value { font-size: 22px; font-weight: 600; letter-spacing: -0.5%; }
+.metric .sub { font-size: 11px; color: #A0A0A0; margin-top: 2px; }
 .chart-wrap { position: relative; width: 100%; height: 300px; margin-bottom: 24px; }
 .chart-wrap.tall { height: 350px; }
 .chart-wrap.small { height: 200px; }
-h2 { font-size: 16px; font-weight: 500; margin: 24px 0 12px; color: #444; }
+h2 { font-size: 20px; font-weight: 600; margin: 24px 0 12px; color: #1A1A1A; letter-spacing: 0; }
 h2:first-child { margin-top: 0; }
-h3 { font-size: 14px; font-weight: 500; margin: 20px 0 10px; color: #666; }
+h3 { font-size: 16px; font-weight: 600; margin: 20px 0 10px; color: #404040; }
 table.data { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
-table.data th { text-align: left; padding: 8px 10px; border-bottom: 2px solid #e8e6e0; color: #888; font-weight: 500; font-size: 12px; }
-table.data td { padding: 8px 10px; border-bottom: 1px solid #f1efe8; }
+table.data th { text-align: left; padding: 8px 10px; border-bottom: 2px solid #E5E5E5; color: #A0A0A0; font-weight: 500; font-size: 12px; }
+table.data td { padding: 8px 10px; border-bottom: 1px solid #F5F5F5; }
 table.data td.num { text-align: right; font-variant-numeric: tabular-nums; }
 table.data tr:hover { background: #faf9f6; }
-.pos { color: #0F6E56; }
-.neg { color: #A32D2D; }
+.pos { color: #10B981; }
+.neg { color: #EF4444; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
-.badge.green { background: #EAF3DE; color: #3B6D11; }
-.badge.red { background: #FCEBEB; color: #791F1F; }
-.badge.purple { background: #EEEDFE; color: #534AB7; }
-.insight { background: #f8f7f4; border-left: 3px solid #534AB7; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 13px; line-height: 1.6; }
+.badge.green { background: #D1FAE5; color: #065F46; }
+.badge.red { background: #FEE2E2; color: #991B1B; }
+.badge.purple { background: #EEF2FF; color: #6366F1; }
+.insight { background: #fff; border-left: 3px solid; border-image: linear-gradient(135deg, #E94B8C, #FF8A5C) 1; padding: 12px 16px; border-radius: 0 10px 10px 0; margin: 16px 0; font-size: 14px; line-height: 1.6; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .insight strong { font-weight: 600; }
-.insight-highlight { background: linear-gradient(135deg, #f0eeff 0%, #f8f7f4 100%); border-left: 4px solid #534AB7; padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 16px 0; font-size: 14px; line-height: 1.7; }
-.insight-highlight .big-number { font-size: 28px; font-weight: 600; color: #534AB7; }
-.insight-highlight .big-green { font-size: 28px; font-weight: 600; color: #0F6E56; }
+.insight-highlight { background: linear-gradient(135deg, #FFF1F5 0%, #FFF8F5 100%); border-left: 4px solid; border-image: linear-gradient(135deg, #E94B8C, #FF8A5C) 1; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 16px 0; font-size: 14px; line-height: 1.7; }
+.insight-highlight .big-number { font-size: 28px; font-weight: 700; color: #6366F1; letter-spacing: -1%; }
+.insight-highlight .big-green { font-size: 28px; font-weight: 700; color: #10B981; letter-spacing: -1%; }
 .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 8px; font-size: 12px; color: #888; }
 .legend span { display: flex; align-items: center; gap: 4px; }
 .legend .dot { width: 10px; height: 10px; border-radius: 2px; }
 .source { font-size: 11px; color: #b4b2a9; margin-top: 24px; text-align: center; }
-.source a { color: #534AB7; text-decoration: none; }
-.divider { border: none; border-top: 1px solid #e8e6e0; margin: 28px 0; }
-.cost-card { background: #f8f7f4; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.source a { color: #6366F1; text-decoration: none; }
+.divider { border: none; border-top: 1px solid #E5E5E5; margin: 28px 0; }
+.cost-card { background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .cost-card .plan-name { font-weight: 500; font-size: 14px; }
 .cost-card .plan-price { font-size: 13px; color: #888; }
 .cost-card .cost-val { font-size: 18px; font-weight: 500; }
 .cost-card .margin-badge { padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; }
-.cost-card .margin-badge.high { background: #EAF3DE; color: #3B6D11; }
-.cost-card .margin-badge.mid { background: #FFF3E0; color: #D85A30; }
-.narrative { background: #faf9f6; border-radius: 10px; padding: 20px; margin: 20px 0; font-size: 14px; line-height: 1.8; }
+.cost-card .margin-badge.high { background: #D1FAE5; color: #065F46; }
+.cost-card .margin-badge.mid { background: #FEF3C7; color: #92400E; }
+.narrative { background: #fff; border-radius: 12px; padding: 20px; margin: 20px 0; font-size: 14px; line-height: 1.8; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .narrative p { margin-bottom: 12px; }
 .narrative p:last-child { margin-bottom: 0; }
-.narrative .highlight { background: #EEEDFE; padding: 2px 6px; border-radius: 4px; font-weight: 500; }
-.narrative .green-highlight { background: #EAF3DE; padding: 2px 6px; border-radius: 4px; font-weight: 500; color: #3B6D11; }
+.narrative .highlight { background: #EEF2FF; padding: 2px 6px; border-radius: 4px; font-weight: 500; color: #6366F1; }
+.narrative .green-highlight { background: #D1FAE5; padding: 2px 6px; border-radius: 4px; font-weight: 500; color: #065F46; }
 .ov-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
 @media (max-width: 600px) { .ov-hero { grid-template-columns: 1fr; } }
-.ov-raise-card { background: linear-gradient(135deg, #534AB7 0%, #3b35a0 100%); color: #fff; border-radius: 12px; padding: 20px; }
+.ov-raise-card { background: linear-gradient(135deg, #E94B8C 0%, #FF8A5C 100%); color: #fff; border-radius: 12px; padding: 20px; }
 .ov-raise-card .ov-label { font-size: 12px; opacity: 0.7; margin-bottom: 4px; }
 .ov-raise-card .ov-big { font-size: 32px; font-weight: 600; }
 .ov-raise-card .ov-sub { font-size: 13px; opacity: 0.8; margin-top: 4px; }
@@ -73,7 +76,7 @@ table.data tr:hover { background: #faf9f6; }
 .ov-raise-card .ov-item { text-align: center; }
 .ov-raise-card .ov-item .ov-v { font-size: 18px; font-weight: 600; }
 .ov-raise-card .ov-item .ov-l { font-size: 11px; opacity: 0.7; }
-.ov-runway-card { background: linear-gradient(135deg, #0F6E56 0%, #0a5a46 100%); color: #fff; border-radius: 12px; padding: 20px; }
+.ov-runway-card { background: linear-gradient(135deg, #10B981 0%, #14B8A6 100%); color: #fff; border-radius: 12px; padding: 20px; }
 .ov-runway-card .ov-label { font-size: 12px; opacity: 0.7; margin-bottom: 4px; }
 .ov-runway-card .ov-big { font-size: 32px; font-weight: 600; }
 .ov-runway-card .ov-sub { font-size: 13px; opacity: 0.8; margin-top: 4px; }
@@ -83,26 +86,26 @@ table.data tr:hover { background: #faf9f6; }
 .ov-runway-card .ov-item .ov-l { font-size: 11px; opacity: 0.7; }
 .milestone-timeline { display: flex; flex-direction: column; gap: 0; margin: 16px 0 24px; }
 .milestone { display: flex; gap: 16px; padding: 12px 0; position: relative; }
-.milestone:not(:last-child)::before { content:''; position: absolute; left: 15px; top: 36px; bottom: 0; width: 2px; background: #e8e6e0; }
+.milestone:not(:last-child)::before { content:''; position: absolute; left: 15px; top: 36px; bottom: 0; width: 2px; background: #E5E5E5; }
 .milestone .ms-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0; }
 .milestone .ms-body { flex: 1; }
 .milestone .ms-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
 .milestone .ms-detail { font-size: 12px; color: #888; }
 .milestone .ms-metrics { display: flex; gap: 16px; margin-top: 6px; flex-wrap: wrap; }
-.milestone .ms-metrics .ms-m { background: #f8f7f4; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
-.ct-round { background: #f8f7f4; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.milestone .ms-metrics .ms-m { background: #F5F5F5; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+.ct-round { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .ct-round-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
 .ct-round-title { font-size: 16px; font-weight: 600; }
 .ct-round-title .round-badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; margin-left: 8px; }
 .ct-input-group { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .ct-input-group label { color: #888; white-space: nowrap; }
 .ct-input { width: 70px; padding: 6px 10px; border: 1px solid #d3d1c7; border-radius: 6px; font-size: 14px; font-weight: 500; text-align: right; background: #fff; color: #1a1a1a; outline: none; }
-.ct-input:focus { border-color: #534AB7; box-shadow: 0 0 0 2px rgba(83,74,183,0.15); }
+.ct-input:focus { border-color: #6366F1; box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
 .ct-input-group .suffix { color: #888; font-weight: 500; }
-.ct-valuation { background: linear-gradient(135deg, #f0eeff 0%, #f8f7f4 100%); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+.ct-valuation { background: linear-gradient(135deg, #FFF1F5 0%, #FFF8F5 100%); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
 .ct-val-item { text-align: center; }
 .ct-val-item .ct-val-label { font-size: 11px; color: #888; }
-.ct-val-item .ct-val-num { font-size: 18px; font-weight: 600; color: #534AB7; }
+.ct-val-item .ct-val-num { font-size: 18px; font-weight: 600; color: #6366F1; }
 .ct-body { display: grid; grid-template-columns: 1fr 200px; gap: 20px; align-items: start; }
 @media (max-width: 600px) { .ct-body { grid-template-columns: 1fr; } }
 .ct-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
@@ -110,14 +113,14 @@ table.data tr:hover { background: #faf9f6; }
 .ct-row .ct-name { font-size: 13px; display: flex; align-items: center; gap: 6px; }
 .ct-row .ct-dot { width: 8px; height: 8px; border-radius: 50%; }
 .ct-row .ct-pct { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.ct-row .ct-usd { font-size: 12px; color: #534AB7; font-weight: 500; margin-left: 6px; }
-.ct-row .ct-delta { font-size: 11px; color: #A32D2D; margin-left: 6px; }
+.ct-row .ct-usd { font-size: 12px; color: #6366F1; font-weight: 500; margin-left: 6px; }
+.ct-row .ct-delta { font-size: 11px; color: #EF4444; margin-left: 6px; }
 .ct-row .ct-delta.pos { color: #888; }
-.ct-summary { background: linear-gradient(135deg, #f0eeff 0%, #f8f7f4 100%); border-radius: 10px; padding: 16px 20px; margin-top: 20px; }
+.ct-summary { background: linear-gradient(135deg, #FFF1F5 0%, #FFF8F5 100%); border-radius: 12px; padding: 16px 20px; margin-top: 20px; }
 .ct-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
 .ct-summary-item { text-align: center; }
 .ct-summary-item .ct-s-label { font-size: 11px; color: #888; margin-bottom: 2px; }
-.ct-summary-item .ct-s-value { font-size: 20px; font-weight: 600; color: #534AB7; }
+.ct-summary-item .ct-s-value { font-size: 20px; font-weight: 600; color: #6366F1; }
 .ct-market-note { font-size: 12px; color: #888; font-style: italic; margin-top: 4px; }
 .ra-hero { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
 @media (max-width: 700px) { .ra-hero { grid-template-columns: repeat(2, 1fr); } }
@@ -125,7 +128,7 @@ table.data tr:hover { background: #faf9f6; }
 .ra-card .ra-label { font-size: 11px; opacity: 0.75; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 .ra-card .ra-big { font-size: 28px; font-weight: 700; }
 .ra-card .ra-sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
-.ra-section { background: #f8f7f4; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.ra-section { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .ra-section-title { font-size: 15px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 .ra-section-title .ra-icon { font-size: 18px; }
 .kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
@@ -137,9 +140,9 @@ table.data tr:hover { background: #faf9f6; }
 .kanban-card:last-child { margin-bottom: 0; }
 .kanban-card .kc-logo { width: 24px; height: 24px; border-radius: 6px; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #888; flex-shrink: 0; }
 .ra-assumptions { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
-.ra-assumption-card { background: #fff; border-radius: 8px; padding: 12px 16px; border-left: 3px solid #534AB7; }
+.ra-assumption-card { background: #fff; border-radius: 10px; padding: 12px 16px; border-left: 3px solid; border-image: linear-gradient(135deg, #E94B8C, #FF8A5C) 1; }
 .ra-assumption-card .ra-a-title { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px; }
-.ra-assumption-card .ra-a-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 13px; border-bottom: 1px solid #f1efe8; }
+.ra-assumption-card .ra-a-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 13px; border-bottom: 1px solid #F5F5F5; }
 .ra-assumption-card .ra-a-row:last-child { border-bottom: none; }
 .ra-assumption-card .ra-a-label { color: #666; }
 .ra-assumption-card .ra-a-val { font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -149,15 +152,15 @@ table.data tr:hover { background: #faf9f6; }
 .cf-card .cf-label { font-size: 11px; opacity: 0.75; margin-bottom: 4px; }
 .cf-card .cf-big { font-size: 24px; font-weight: 600; }
 .cf-card .cf-sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
-.cf-dfc { background: #f8f7f4; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
+.cf-dfc { background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 .cf-dfc table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.cf-dfc th { text-align: left; padding: 6px 8px; color: #888; font-weight: 500; font-size: 11px; border-bottom: 2px solid #e8e6e0; }
-.cf-dfc td { padding: 6px 8px; border-bottom: 1px solid #f1efe8; font-variant-numeric: tabular-nums; }
+.cf-dfc th { text-align: left; padding: 6px 8px; color: #A0A0A0; font-weight: 500; font-size: 11px; border-bottom: 2px solid #E5E5E5; }
+.cf-dfc td { padding: 6px 8px; border-bottom: 1px solid #F5F5F5; font-variant-numeric: tabular-nums; }
 .cf-dfc td.num { text-align: right; }
-.cf-dfc tr.total-row { font-weight: 600; background: #f0eeff; }
+.cf-dfc tr.total-row { font-weight: 600; background: #FFF1F5; }
 .cf-dfc tr.total-row td { border-bottom: 2px solid #d3d1c7; }
 .cf-dfc tr.subtotal-row { font-weight: 500; }
-.cf-dfc tr.subtotal-row td { border-top: 1px solid #d3d1c7; }
+.cf-dfc tr.subtotal-row td { border-top: 1px solid #E5E5E5; }
 .cf-scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
 @media (max-width: 700px) { .cf-scenario-grid { grid-template-columns: 1fr; } }
 .cf-scenario { border-radius: 10px; padding: 16px 20px; }
@@ -189,7 +192,7 @@ function fmtN(n) { if(Math.abs(n)>=1e6)return(n/1e6).toFixed(1)+'M'; if(Math.abs
 function findRow(lines,kw) { for(let i=0;i<lines.length;i++){if(lines[i].includes(kw))return lines[i];} return null; }
 function extractMonthlyValues(line,si) { let c=parseRow(line); return c.slice(si).map(parseBRL); }
 
-const COLORS = {halef:'#534AB7',fukuda:'#1D9E75',joao:'#D85A30',preseed:'#888',esop:'#E8C547',seed:'#2196F3',seriesA:'#9C27B0'};
+const COLORS = {halef:'#6366F1',fukuda:'#10B981',joao:'#FF8A5C',preseed:'#A0A0A0',esop:'#F59E0B',seed:'#3B82F6',seriesA:'#8B5CF6'};
 let ctCharts = {};
 
 (async function() {
@@ -759,29 +762,29 @@ let ctCharts = {};
         <button onclick="showTab('ratio',this)">Free:Paid ratio</button>
         <button onclick="showTab('cash',this)">Fluxo de caixa</button>
         <button onclick="showTab('investor',this)">M\u00E9tricas investidor</button>
-        <button onclick="showTab('captable',this)" style="border-color:#534AB7;color:#534AB7;font-weight:600;">Cap Table</button>
+        <button onclick="showTab('captable',this)" style="border-color:#6366F1;color:#6366F1;font-weight:600;">Cap Table</button>
       </nav>
 
       <div id="retrato" class="section active">
         <h2 style="margin-top:0;">Retrato Atual \u2014 hiGen em tempo real</h2>
         
         <div class="ra-hero">
-          <div class="ra-card" style="background:linear-gradient(135deg,#534AB7,#3b35a0);">
+          <div class="ra-card" style="background:linear-gradient(135deg,#E94B8C,#FF8A5C);">
             <div class="ra-label">Users totais</div>
             <div class="ra-big">642</div>
             <div class="ra-sub">Cadastrados na plataforma</div>
           </div>
-          <div class="ra-card" style="background:linear-gradient(135deg,#1D9E75,#177a5b);">
+          <div class="ra-card" style="background:linear-gradient(135deg,#10B981,#14B8A6);">
             <div class="ra-label">HirePro (RocketSeat)</div>
             <div class="ra-big">14</div>
             <div class="ra-sub">Parceria ativa</div>
           </div>
-          <div class="ra-card" style="background:linear-gradient(135deg,#D85A30,#b84a28);">
+          <div class="ra-card" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">
             <div class="ra-label">Hire (pagantes)</div>
             <div class="ra-big">2</div>
             <div class="ra-sub">R$28,02 l\u00EDquido \u00B7 R$30 faturado</div>
           </div>
-          <div class="ra-card" style="background:linear-gradient(135deg,#2196F3,#1976D2);">
+          <div class="ra-card" style="background:linear-gradient(135deg,#3B82F6,#6366F1);">
             <div class="ra-label">Auto Apply</div>
             <div class="ra-big">337</div>
             <div class="ra-sub">Aplica\u00E7\u00F5es \u2014 1 semana de go-live</div>
@@ -791,20 +794,20 @@ let ctCharts = {};
         <div class="ra-section">
           <div class="ra-section-title"><span class="ra-icon">\u{1F3AF}</span> Pilotos com Institui\u00E7\u00F5es</div>
           <div class="kanban">
-            <div class="kanban-col" style="background:#f0eeff;">
-              <div class="kc-title" style="color:#534AB7;">\u{1F4CB} To Do <span class="kc-count">2</span></div>
-              <div class="kanban-card"><div class="kc-logo" style="background:#EEEDFE;color:#534AB7;">P</div>Pearson</div>
-              <div class="kanban-card"><div class="kc-logo" style="background:#E3F2FD;color:#2196F3;">B</div>BeConfident</div>
+            <div class="kanban-col" style="background:#EEF2FF;">
+              <div class="kc-title" style="color:#6366F1;">\u{1F4CB} To Do <span class="kc-count">2</span></div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#EEF2FF;color:#6366F1;">P</div>Pearson</div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#DBEAFE;color:#3B82F6;">B</div>BeConfident</div>
             </div>
-            <div class="kanban-col" style="background:#FFF3E0;">
-              <div class="kc-title" style="color:#D85A30;">\u{1F528} Doing <span class="kc-count">1</span></div>
-              <div class="kanban-card"><div class="kc-logo" style="background:#FFF3E0;color:#D85A30;">A</div>Anima</div>
+            <div class="kanban-col" style="background:#FEF3C7;">
+              <div class="kc-title" style="color:#F59E0B;">\u{1F528} Doing <span class="kc-count">1</span></div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#FEF3C7;color:#F59E0B;">A</div>Anima</div>
             </div>
-            <div class="kanban-col" style="background:#EAF3DE;">
-              <div class="kc-title" style="color:#3B6D11;">\u2705 Done <span class="kc-count">3</span></div>
-              <div class="kanban-card"><div class="kc-logo" style="background:#EAF3DE;color:#3B6D11;">A</div>Alura</div>
-              <div class="kanban-card"><div class="kc-logo" style="background:#EAF3DE;color:#3B6D11;">U</div>UNISUAM</div>
-              <div class="kanban-card"><div class="kc-logo" style="background:#EAF3DE;color:#3B6D11;">E</div>EBAC</div>
+            <div class="kanban-col" style="background:#D1FAE5;">
+              <div class="kc-title" style="color:#065F46;">\u2705 Done <span class="kc-count">3</span></div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#D1FAE5;color:#065F46;">A</div>Alura</div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#D1FAE5;color:#065F46;">U</div>UNISUAM</div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#D1FAE5;color:#065F46;">E</div>EBAC</div>
             </div>
           </div>
         </div>
@@ -912,19 +915,19 @@ let ctCharts = {};
         <div class="insight">ARPU est\u00E1vel ~<strong>R$37-38/m\u00EAs</strong> ao longo dos 3 anos. Modelo freemium gera <strong>${fmtN(novosPag[0])}</strong> novos pagantes no Ano 1, <strong>${fmtN(novosPag[1])}</strong> no Ano 2 e <strong>${fmtN(novosPag[2])}</strong> no Ano 3 via convers\u00E3o org\u00E2nica + entidades estudantis.</div>
 
         <h2>Receita anual + margem bruta</h2>
-        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>Receita bruta (R$)</span><span><span class="dot" style="background:#1D9E75"></span>Gross margin (%)</span></div>
+        <div class="legend"><span><span class="dot" style="background:#6366F1"></span>Receita bruta (R$)</span><span><span class="dot" style="background:#10B981"></span>Gross margin (%)</span></div>
         <div class="chart-wrap"><canvas id="chartRevAnual"></canvas></div>
 
         <h2>MRR + usu\u00E1rios pagantes (36 meses)</h2>
-        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>MRR (R$)</span><span><span class="dot" style="background:#1D9E75"></span>Pagantes (#)</span></div>
+        <div class="legend"><span><span class="dot" style="background:#6366F1"></span>MRR (R$)</span><span><span class="dot" style="background:#10B981"></span>Pagantes (#)</span></div>
         <div class="chart-wrap"><canvas id="chartMRR"></canvas></div>
 
         <h2>Milestones para Series A</h2>
         <div class="milestone-timeline">
           <div class="milestone"><div class="ms-dot" style="background:#888;">M6</div><div class="ms-body"><div class="ms-title">Valida\u00E7\u00E3o Product-Market Fit</div><div class="ms-metrics"><span class="ms-m">MRR ${fmt(mrr[6]||0)}</span><span class="ms-m">ARR ${fmt(arrM6)}</span><span class="ms-m">${fmtN(totalPay[6]||0)} pagantes</span></div></div></div>
-          <div class="milestone"><div class="ms-dot" style="background:#1D9E75;">M12</div><div class="ms-body"><div class="ms-title">Traction + EBITDA positivo</div><div class="ms-detail">Trigger para Series A</div><div class="ms-metrics"><span class="ms-m">MRR ${fmt(mrr[m12]||0)}</span><span class="ms-m">ARR ${fmt(arrM12)}</span><span class="ms-m">${fmtN(totalPay[m12]||0)} pagantes</span></div></div></div>
-          <div class="milestone"><div class="ms-dot" style="background:#534AB7;">M18</div><div class="ms-body"><div class="ms-title">Series A com m\u00E9tricas fortes</div><div class="ms-detail">Caixa R$3.1M de saldo</div><div class="ms-metrics"><span class="ms-m">MRR ${fmt(mrr[18]||0)}</span><span class="ms-m">ARR ${fmt(arrM18)}</span><span class="ms-m">${fmtN(totalPay[18]||0)} pagantes</span></div></div></div>
-          <div class="milestone"><div class="ms-dot" style="background:#D85A30;">M24</div><div class="ms-body"><div class="ms-title">Expans\u00E3o e internacionaliza\u00E7\u00E3o</div><div class="ms-metrics"><span class="ms-m">MRR ${fmt(mrr[m24]||0)}</span><span class="ms-m">ARR ${fmt(arrM24)}</span><span class="ms-m">${fmtN(totalPay[m24]||0)} pagantes</span></div></div></div>
+          <div class="milestone"><div class="ms-dot" style="background:#10B981;">M12</div><div class="ms-body"><div class="ms-title">Traction + EBITDA positivo</div><div class="ms-detail">Trigger para Series A</div><div class="ms-metrics"><span class="ms-m">MRR ${fmt(mrr[m12]||0)}</span><span class="ms-m">ARR ${fmt(arrM12)}</span><span class="ms-m">${fmtN(totalPay[m12]||0)} pagantes</span></div></div></div>
+          <div class="milestone"><div class="ms-dot" style="background:#E94B8C;">M18</div><div class="ms-body"><div class="ms-title">Series A com m\u00E9tricas fortes</div><div class="ms-detail">Caixa R$3.1M de saldo</div><div class="ms-metrics"><span class="ms-m">MRR ${fmt(mrr[18]||0)}</span><span class="ms-m">ARR ${fmt(arrM18)}</span><span class="ms-m">${fmtN(totalPay[18]||0)} pagantes</span></div></div></div>
+          <div class="milestone"><div class="ms-dot" style="background:#8B5CF6;">M24</div><div class="ms-body"><div class="ms-title">Expans\u00E3o e internacionaliza\u00E7\u00E3o</div><div class="ms-metrics"><span class="ms-m">MRR ${fmt(mrr[m24]||0)}</span><span class="ms-m">ARR ${fmt(arrM24)}</span><span class="ms-m">${fmtN(totalPay[m24]||0)} pagantes</span></div></div></div>
         </div>
 
         <h2>Margem EBITDA mensal</h2>
@@ -950,18 +953,18 @@ let ctCharts = {};
       <div id="cost" class="section">
         <h2>Custo por tipo de usu\u00E1rio</h2>
         <div class="cost-card" style="border-left:4px solid #888;"><div><div class="plan-name">Usu\u00E1rio criado (free)</div><div class="plan-price">LLM onboarding (3/30)</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[0].cost.toFixed(2)}/m\u00EAs</div></div></div>
-        <div class="cost-card" style="border-left:4px solid #D85A30;"><div><div class="plan-name">Hire R$15 (promo)</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[1].cost.toFixed(2)}/m\u00EAs</div><div class="margin-badge mid">margem ${costTypes[1].marginPct.toFixed(0)}%</div></div></div>
+        <div class="cost-card" style="border-left:4px solid #FF8A5C;"><div><div class="plan-name">Hire R$15 (promo)</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[1].cost.toFixed(2)}/m\u00EAs</div><div class="margin-badge mid">margem ${costTypes[1].marginPct.toFixed(0)}%</div></div></div>
         <div class="cost-card" style="border-left:4px solid #1D9E75;"><div><div class="plan-name">Hire R$39 (regular)</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[2].cost.toFixed(2)}/m\u00EAs</div><div class="margin-badge high">margem ${costTypes[2].marginPct.toFixed(0)}%</div></div></div>
-        <div class="cost-card" style="border-left:4px solid #D85A30;"><div><div class="plan-name">Plus R$20</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[3].cost.toFixed(2)}/m\u00EAs</div><div class="margin-badge mid">margem ${costTypes[3].marginPct.toFixed(0)}%</div></div></div>
+        <div class="cost-card" style="border-left:4px solid #FF8A5C;"><div><div class="plan-name">Plus R$20</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[3].cost.toFixed(2)}/m\u00EAs</div><div class="margin-badge mid">margem ${costTypes[3].marginPct.toFixed(0)}%</div></div></div>
         <div class="cost-card" style="border-left:4px solid #1D9E75;"><div><div class="plan-name">Pro R$45</div></div><div style="text-align:right;"><div class="cost-val">R$${costTypes[4].cost.toFixed(2)}/m\u00EAs</div><div class="margin-badge high">margem ${costTypes[4].marginPct.toFixed(0)}%</div></div></div>
         <hr class="divider">
         <h2>LLM unit cost vs desconto escala (36 meses)</h2>
-        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>LLM unit cost (R$)</span><span><span class="dot" style="background:#1D9E75"></span>Desconto escala %</span></div>
+        <div class="legend"><span><span class="dot" style="background:#6366F1"></span>LLM unit cost (R$)</span><span><span class="dot" style="background:#10B981"></span>Desconto escala %</span></div>
         <div class="chart-wrap tall"><canvas id="chartLLMCost"></canvas></div>
         <div class="insight">O custo LLM por usu\u00E1rio cai de <strong>R$8.00</strong> (M1) para <strong>R$${llmM36.toFixed(2)}</strong> (M36) \u2014 redu\u00E7\u00E3o de <strong>${(m36Discount*100).toFixed(0)}%</strong> com desconto de escala.</div>
         <hr class="divider">
         <h2>Composi\u00E7\u00E3o de custo por plano (stacked)</h2>
-        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>LLM</span><span><span class="dot" style="background:#D85A30"></span>Stripe</span><span><span class="dot" style="background:#888"></span>Infra</span><span><span class="dot" style="background:#1D9E75"></span>Margem</span></div>
+        <div class="legend"><span><span class="dot" style="background:#6366F1"></span>LLM</span><span><span class="dot" style="background:#FF8A5C"></span>Stripe</span><span><span class="dot" style="background:#888"></span>Infra</span><span><span class="dot" style="background:#10B981"></span>Margem</span></div>
         <div class="chart-wrap tall"><canvas id="chartCost"></canvas></div>
         <table class="data"><tr><th>Plano</th><th>Pre\u00E7o</th><th>LLM</th><th>Stripe</th><th>Infra</th><th>Total</th><th>Margem</th></tr>
         ${plans.map(p=>`<tr><td>${p.name}</td><td class="num">R$${p.price}</td><td class="num">R$${p.llm.toFixed(2)}</td><td class="num">R$${p.stripe.toFixed(2)}</td><td class="num">R$${p.fixed.toFixed(2)}</td><td class="num">R$${p.total.toFixed(2)}</td><td class="num pos">${p.margin.toFixed(0)}%</td></tr>`).join('')}</table>
@@ -984,17 +987,17 @@ let ctCharts = {};
         <h2 style="margin-top:0;">Fluxo de Caixa \u2014 Vis\u00E3o Estrat\u00E9gica</h2>
         
         <div class="cf-hero">
-          <div class="cf-card" style="background:linear-gradient(135deg,#534AB7,#3b35a0);">
+          <div class="cf-card" style="background:linear-gradient(135deg,#E94B8C,#FF8A5C);">
             <div class="cf-label">Capta\u00E7\u00E3o</div>
             <div class="cf-big">R$6M</div>
             <div class="cf-sub">USD 1M \u00D7 R$6.00</div>
           </div>
-          <div class="cf-card" style="background:linear-gradient(135deg,#0F6E56,#0a5a46);">
+          <div class="cf-card" style="background:linear-gradient(135deg,#10B981,#14B8A6);">
             <div class="cf-label">Runway</div>
             <div class="cf-big">>36 meses</div>
             <div class="cf-sub">Caixa nunca zera</div>
           </div>
-          <div class="cf-card" style="background:linear-gradient(135deg,#D85A30,#b84a28);">
+          <div class="cf-card" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);">
             <div class="cf-label">Burn m\u00E1ximo</div>
             <div class="cf-big">${fmt(maxBurn)}</div>
             <div class="cf-sub">M${maxBurnMonth} \u2014 \u00FAnico m\u00EAs negativo</div>
@@ -1007,11 +1010,11 @@ let ctCharts = {};
         </div>
 
         <h2>Saldo acumulado + burn rate (36 meses)</h2>
-        <div class="legend"><span><span class="dot" style="background:#1D9E75"></span>Saldo acumulado</span><span><span class="dot" style="background:#D85A30"></span>Burn rate (quando negativo)</span><span><span class="dot" style="background:#534AB7"></span>Receita mensal</span></div>
+        <div class="legend"><span><span class="dot" style="background:#10B981"></span>Saldo acumulado</span><span><span class="dot" style="background:#FF8A5C"></span>Burn rate (quando negativo)</span><span><span class="dot" style="background:#6366F1"></span>Receita mensal</span></div>
         <div class="chart-wrap tall"><canvas id="chartCashNew"></canvas></div>
 
         <h2>Waterfall \u2014 Composi\u00E7\u00E3o de sa\u00EDdas por ano</h2>
-        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>Folha/People</span><span><span class="dot" style="background:#D85A30"></span>MarTech</span><span><span class="dot" style="background:#E8C547"></span>Impostos</span><span><span class="dot" style="background:#888"></span>Infra</span><span><span class="dot" style="background:#2196F3"></span>Admin</span></div>
+        <div class="legend"><span><span class="dot" style="background:#6366F1"></span>Folha/People</span><span><span class="dot" style="background:#FF8A5C"></span>MarTech</span><span><span class="dot" style="background:#F59E0B"></span>Impostos</span><span><span class="dot" style="background:#888"></span>Infra</span><span><span class="dot" style="background:#3B82F6"></span>Admin</span></div>
         <div class="chart-wrap tall"><canvas id="chartWaterfall"></canvas></div>
 
         <h2>DFC \u2014 Demonstra\u00E7\u00E3o de Fluxo de Caixa (trimestral)</h2>
@@ -1019,22 +1022,22 @@ let ctCharts = {};
 
         <h2>Cen\u00E1rios de Caixa</h2>
         <div class="cf-scenario-grid">
-          <div class="cf-scenario" style="background:#EAF3DE;">
-            <div class="sc-title" style="color:#3B6D11;">\u2191 Otimista (+20% receita)</div>
+          <div class="cf-scenario" style="background:#D1FAE5;">
+            <div class="sc-title" style="color:#065F46;">\u2191 Otimista (+20% receita)</div>
             <div class="sc-row"><span class="sc-label">Saldo M12</span><span class="sc-val pos">${fmt((saldo[12]||0)*1.15)}</span></div>
             <div class="sc-row"><span class="sc-label">Saldo M24</span><span class="sc-val pos">${fmt((saldo[24]||0)*1.25)}</span></div>
             <div class="sc-row"><span class="sc-label">Saldo M36</span><span class="sc-val pos">${fmt((saldo[36]||0)*1.35)}</span></div>
             <div class="sc-row"><span class="sc-label">Runway</span><span class="sc-val pos">>36 meses</span></div>
           </div>
-          <div class="cf-scenario" style="background:#f0eeff;">
-            <div class="sc-title" style="color:#534AB7;">\u2014 Base (modelo atual)</div>
+          <div class="cf-scenario" style="background:#EEF2FF;">
+            <div class="sc-title" style="color:#6366F1;">\u2014 Base (modelo atual)</div>
             <div class="sc-row"><span class="sc-label">Saldo M12</span><span class="sc-val">${fmt(saldo[12]||0)}</span></div>
             <div class="sc-row"><span class="sc-label">Saldo M24</span><span class="sc-val">${fmt(saldo[24]||0)}</span></div>
             <div class="sc-row"><span class="sc-label">Saldo M36</span><span class="sc-val">${fmt(saldo[36]||0)}</span></div>
             <div class="sc-row"><span class="sc-label">Runway</span><span class="sc-val">>36 meses</span></div>
           </div>
-          <div class="cf-scenario" style="background:#FFF3E0;">
-            <div class="sc-title" style="color:#D85A30;">\u2193 Conservador (-30% receita)</div>
+          <div class="cf-scenario" style="background:#FEE2E2;">
+            <div class="sc-title" style="color:#EF4444;">\u2193 Conservador (-30% receita)</div>
             <div class="sc-row"><span class="sc-label">Saldo M12</span><span class="sc-val">${fmt(Math.max(0,(saldo[12]||0)*0.75))}</span></div>
             <div class="sc-row"><span class="sc-label">Saldo M24</span><span class="sc-val">${fmt(Math.max(0,(saldo[24]||0)*0.55))}</span></div>
             <div class="sc-row"><span class="sc-label">Saldo M36</span><span class="sc-val">${fmt(Math.max(0,(saldo[36]||0)*0.40))}</span></div>
@@ -1043,7 +1046,7 @@ let ctCharts = {};
         </div>
 
         <h2>Cen\u00E1rios projetados (36 meses)</h2>
-        <div class="legend"><span><span class="dot" style="background:#1D9E75"></span>Otimista</span><span><span class="dot" style="background:#534AB7"></span>Base</span><span><span class="dot" style="background:#D85A30"></span>Conservador</span></div>
+        <div class="legend"><span><span class="dot" style="background:#10B981"></span>Otimista</span><span><span class="dot" style="background:#6366F1"></span>Base</span><span><span class="dot" style="background:#FF8A5C"></span>Conservador</span></div>
         <div class="chart-wrap tall"><canvas id="chartScenarios"></canvas></div>
 
         <h2>Efici\u00EAncia operacional</h2>
@@ -1071,7 +1074,7 @@ let ctCharts = {};
         <h2>Composi\u00E7\u00E3o de usu\u00E1rios por plano (M12, M24, M36)</h2>
         <div class="chart-wrap"><canvas id="chartMix"></canvas></div>
         <h2>Evolu\u00E7\u00E3o do custo LLM por usu\u00E1rio</h2>
-        <div class="legend"><span><span class="dot" style="background:#534AB7"></span>LLM unit cost</span><span><span class="dot" style="background:#1D9E75"></span>Desconto %</span></div>
+        <div class="legend"><span><span class="dot" style="background:#6366F1"></span>LLM unit cost</span><span><span class="dot" style="background:#10B981"></span>Desconto %</span></div>
         <div class="chart-wrap"><canvas id="chartLLMInvestor"></canvas></div>
       </div>
 
@@ -1085,29 +1088,29 @@ let ctCharts = {};
 
     const mLabels=MONTHS.slice(1), mrrData=mrr.slice(1), payData=totalPay.slice(1);
 
-    new Chart(document.getElementById('chartRevAnual'),{type:'bar',data:{labels:['Ano 1','Ano 2','Ano 3'],datasets:[{type:'bar',label:'Receita bruta',data:[recAnual[0],recAnual[1],recAnual[2]],backgroundColor:['rgba(83,74,183,0.6)','rgba(83,74,183,0.75)','rgba(83,74,183,0.9)'],borderRadius:6,yAxisID:'y',order:2},{type:'line',label:'Gross margin',data:[grossMarginPct[0],grossMarginPct[1],grossMarginPct[2]],borderColor:'#1D9E75',backgroundColor:'transparent',pointRadius:6,pointBackgroundColor:'#1D9E75',tension:0.3,yAxisID:'y1',order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{title:{display:true,text:'Receita (R$)'},ticks:{callback:v=>fmt(v)}},y1:{position:'right',title:{display:true,text:'Gross Margin %'},min:90,max:100,grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}}}});
+    new Chart(document.getElementById('chartRevAnual'),{type:'bar',data:{labels:['Ano 1','Ano 2','Ano 3'],datasets:[{type:'bar',label:'Receita bruta',data:[recAnual[0],recAnual[1],recAnual[2]],backgroundColor:['rgba(99,102,241,0.6)','rgba(99,102,241,0.75)','rgba(99,102,241,0.9)'],borderRadius:6,yAxisID:'y',order:2},{type:'line',label:'Gross margin',data:[grossMarginPct[0],grossMarginPct[1],grossMarginPct[2]],borderColor:'#1D9E75',backgroundColor:'transparent',pointRadius:6,pointBackgroundColor:'#1D9E75',tension:0.3,yAxisID:'y1',order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{title:{display:true,text:'Receita (R$)'},ticks:{callback:v=>fmt(v)}},y1:{position:'right',title:{display:true,text:'Gross Margin %'},min:90,max:100,grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}}}});
 
-    new Chart(document.getElementById('chartMRR'),{type:'bar',data:{labels:mLabels,datasets:[{type:'bar',label:'MRR',data:mrrData,backgroundColor:'rgba(83,74,183,0.7)',yAxisID:'y',order:2},{type:'line',label:'Pagantes',data:payData,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.1)',fill:true,tension:0.3,yAxisID:'y1',order:1,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{title:{display:true,text:'MRR (R$)'},ticks:{callback:v=>fmt(v)}},y1:{position:'right',title:{display:true,text:'Pagantes'},grid:{drawOnChartArea:false},ticks:{callback:v=>fmtN(v)}}}}});
+    new Chart(document.getElementById('chartMRR'),{type:'bar',data:{labels:mLabels,datasets:[{type:'bar',label:'MRR',data:mrrData,backgroundColor:'rgba(99,102,241,0.7)',yAxisID:'y',order:2},{type:'line',label:'Pagantes',data:payData,borderColor:'#1D9E75',backgroundColor:'rgba(16,185,129,0.1)',fill:true,tension:0.3,yAxisID:'y1',order:1,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{title:{display:true,text:'MRR (R$)'},ticks:{callback:v=>fmt(v)}},y1:{position:'right',title:{display:true,text:'Pagantes'},grid:{drawOnChartArea:false},ticks:{callback:v=>fmtN(v)}}}}});
 
-    new Chart(document.getElementById('chartMargin'),{type:'line',data:{labels:mLabels,datasets:[{data:margin.slice(0,36),borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,0.08)',fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>v+'%'},suggestedMin:-100,suggestedMax:80}}}});
+    new Chart(document.getElementById('chartMargin'),{type:'line',data:{labels:mLabels,datasets:[{data:margin.slice(0,36),borderColor:'#6366F1',backgroundColor:'rgba(99,102,241,0.08)',fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>v+'%'},suggestedMin:-100,suggestedMax:80}}}});
 
     if(document.getElementById('chartARPU')){new Chart(document.getElementById('chartARPU'),{type:'line',data:{labels:mLabels,datasets:[{data:arpu.slice(1),borderColor:'#D85A30',tension:0.3,pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{title:{display:true,text:'R$/user'},ticks:{callback:v=>'R$'+v}}}}});}
 
-    function buildLLMChart(id){const c=document.getElementById(id);if(!c)return;const sm=['M1','M6','M12','M18','M24','M30','M36'],si=[1,6,12,18,24,30,36];new Chart(c,{type:'line',data:{labels:sm,datasets:[{data:si.map(i=>llmUnitCosts[i]),borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,0.15)',fill:true,tension:0.3,pointRadius:4,pointBackgroundColor:'#534AB7',yAxisID:'y'},{data:si.map(i=>scaleDiscounts[i]*100),borderColor:'#1D9E75',borderDash:[6,3],backgroundColor:'transparent',tension:0.3,pointRadius:4,pointBackgroundColor:'#1D9E75',yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{title:{display:true,text:'R$/user'},min:5.5,max:9.0,ticks:{callback:v=>'R$'+v.toFixed(1)}},y1:{position:'right',title:{display:true,text:'Desconto %'},min:0,max:20,grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}}}});}
+    function buildLLMChart(id){const c=document.getElementById(id);if(!c)return;const sm=['M1','M6','M12','M18','M24','M30','M36'],si=[1,6,12,18,24,30,36];new Chart(c,{type:'line',data:{labels:sm,datasets:[{data:si.map(i=>llmUnitCosts[i]),borderColor:'#6366F1',backgroundColor:'rgba(99,102,241,0.15)',fill:true,tension:0.3,pointRadius:4,pointBackgroundColor:'#6366F1',yAxisID:'y'},{data:si.map(i=>scaleDiscounts[i]*100),borderColor:'#1D9E75',borderDash:[6,3],backgroundColor:'transparent',tension:0.3,pointRadius:4,pointBackgroundColor:'#1D9E75',yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{title:{display:true,text:'R$/user'},min:5.5,max:9.0,ticks:{callback:v=>'R$'+v.toFixed(1)}},y1:{position:'right',title:{display:true,text:'Desconto %'},min:0,max:20,grid:{drawOnChartArea:false},ticks:{callback:v=>v+'%'}}}}});}
     buildLLMChart('chartLLMCost'); buildLLMChart('chartLLMInvestor');
 
-    new Chart(document.getElementById('chartCost'),{type:'bar',data:{labels:plans.map(p=>p.name),datasets:[{label:'LLM',data:plans.map(p=>p.llm),backgroundColor:'#534AB7'},{label:'Stripe',data:plans.map(p=>p.stripe),backgroundColor:'#D85A30'},{label:'Infra',data:plans.map(p=>p.fixed),backgroundColor:'#888'},{label:'Margem',data:plans.map(p=>p.price-p.total),backgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>'R$'+v}}}}});
+    new Chart(document.getElementById('chartCost'),{type:'bar',data:{labels:plans.map(p=>p.name),datasets:[{label:'LLM',data:plans.map(p=>p.llm),backgroundColor:'#6366F1'},{label:'Stripe',data:plans.map(p=>p.stripe),backgroundColor:'#D85A30'},{label:'Infra',data:plans.map(p=>p.fixed),backgroundColor:'#888'},{label:'Margem',data:plans.map(p=>p.price-p.total),backgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>'R$'+v}}}}});
 
-    new Chart(document.getElementById('chartRatio'),{type:'line',data:{labels:mLabels,datasets:[{label:'Free',data:free.slice(1),borderColor:'#888',backgroundColor:'rgba(136,135,128,0.1)',fill:true,tension:0.3,pointRadius:0},{label:'Pagantes',data:payData,borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,0.1)',fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{usePointStyle:true,pointStyle:'line',boxWidth:20}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>fmtN(v)}}}}});
+    new Chart(document.getElementById('chartRatio'),{type:'line',data:{labels:mLabels,datasets:[{label:'Free',data:free.slice(1),borderColor:'#888',backgroundColor:'rgba(136,135,128,0.1)',fill:true,tension:0.3,pointRadius:0},{label:'Pagantes',data:payData,borderColor:'#6366F1',backgroundColor:'rgba(99,102,241,0.1)',fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{usePointStyle:true,pointStyle:'line',boxWidth:20}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>fmtN(v)}}}}});
 
-    if(document.getElementById('chartRatioLine')){const rr=[];for(let m=1;m<=36;m++){let f=free[m]||0,p=totalPay[m]||0;rr.push(p>0?f/p:0);}new Chart(document.getElementById('chartRatioLine'),{type:'line',data:{labels:mLabels,datasets:[{label:'Ratio real',data:rr,borderColor:'#534AB7',tension:0.3,pointRadius:0,fill:false},{label:'Limite sustent\u00E1vel',data:Array(36).fill(sustainableRatio),borderColor:'#1D9E75',borderDash:[8,4],pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{usePointStyle:true,pointStyle:'line',boxWidth:20}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{title:{display:true,text:'Free/pagante'},suggestedMax:sustainableRatio+5}}}});}
+    if(document.getElementById('chartRatioLine')){const rr=[];for(let m=1;m<=36;m++){let f=free[m]||0,p=totalPay[m]||0;rr.push(p>0?f/p:0);}new Chart(document.getElementById('chartRatioLine'),{type:'line',data:{labels:mLabels,datasets:[{label:'Ratio real',data:rr,borderColor:'#6366F1',tension:0.3,pointRadius:0,fill:false},{label:'Limite sustent\u00E1vel',data:Array(36).fill(sustainableRatio),borderColor:'#1D9E75',borderDash:[8,4],pointRadius:0,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{usePointStyle:true,pointStyle:'line',boxWidth:20}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{title:{display:true,text:'Free/pagante'},suggestedMax:sustainableRatio+5}}}});}
 
     // === CASH FLOW CHARTS ===
     // 1. Saldo + burn + receita
-    new Chart(document.getElementById('chartCashNew'),{type:'line',data:{labels:MONTHS,datasets:[{label:'Saldo',data:saldo,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',fill:true,tension:0.3,pointRadius:0,yAxisID:'y'},{label:'Receita',data:fcReceita,borderColor:'#534AB7',borderDash:[6,3],tension:0.3,pointRadius:0,yAxisID:'y'},{label:'Burn',data:burnRate.map(v=>v>0?v:null),borderColor:'#D85A30',backgroundColor:'rgba(216,90,48,0.15)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:'#D85A30',yAxisID:'y'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>fmt(v)}}}}});
+    new Chart(document.getElementById('chartCashNew'),{type:'line',data:{labels:MONTHS,datasets:[{label:'Saldo',data:saldo,borderColor:'#1D9E75',backgroundColor:'rgba(16,185,129,0.08)',fill:true,tension:0.3,pointRadius:0,yAxisID:'y'},{label:'Receita',data:fcReceita,borderColor:'#6366F1',borderDash:[6,3],tension:0.3,pointRadius:0,yAxisID:'y'},{label:'Burn',data:burnRate.map(v=>v>0?v:null),borderColor:'#D85A30',backgroundColor:'rgba(255,138,92,0.15)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:'#D85A30',yAxisID:'y'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>fmt(v)}}}}});
 
     // 2. Waterfall stacked bar (expenses by category per year)
-    new Chart(document.getElementById('chartWaterfall'),{type:'bar',data:{labels:['Ano 1','Ano 2','Ano 3'],datasets:[{label:'Folha',data:[fcFolhaAnual[0],fcFolhaAnual[1],fcFolhaAnual[2]],backgroundColor:'#534AB7'},{label:'MarTech',data:[fcMktAnual[0],fcMktAnual[1],fcMktAnual[2]],backgroundColor:'#D85A30'},{label:'Impostos',data:[fcImpostosAnual[0],fcImpostosAnual[1],fcImpostosAnual[2]],backgroundColor:'#E8C547'},{label:'Infra',data:[fcInfraAnual[0],fcInfraAnual[1],fcInfraAnual[2]],backgroundColor:'#888'},{label:'Admin',data:[fcAdminAnual[0],fcAdminAnual[1],fcAdminAnual[2]],backgroundColor:'#2196F3'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>fmt(v)}}}}});
+    new Chart(document.getElementById('chartWaterfall'),{type:'bar',data:{labels:['Ano 1','Ano 2','Ano 3'],datasets:[{label:'Folha',data:[fcFolhaAnual[0],fcFolhaAnual[1],fcFolhaAnual[2]],backgroundColor:'#6366F1'},{label:'MarTech',data:[fcMktAnual[0],fcMktAnual[1],fcMktAnual[2]],backgroundColor:'#D85A30'},{label:'Impostos',data:[fcImpostosAnual[0],fcImpostosAnual[1],fcImpostosAnual[2]],backgroundColor:'#F59E0B'},{label:'Infra',data:[fcInfraAnual[0],fcInfraAnual[1],fcInfraAnual[2]],backgroundColor:'#888'},{label:'Admin',data:[fcAdminAnual[0],fcAdminAnual[1],fcAdminAnual[2]],backgroundColor:'#3B82F6'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>fmt(v)}}}}});
 
     // 3. DFC Table (quarterly)
     (function(){
@@ -1134,10 +1137,10 @@ let ctCharts = {};
       h+=r('\u2796 Admin',fcAdmin,'');
       h+=r('<strong>= Total Sa\u00EDdas</strong>',MONTHS.map((_,i)=>(fcFolha[i]||0)+(fcMkt[i]||0)+(fcImpostos[i]||0)+(fcInfra[i]||0)+(fcAdmin[i]||0)),'total-row');
       h+='<tr><td colspan="8" style="height:8px;border:none;"></td></tr>';
-      h+=r('<strong style="color:#534AB7;">= Fluxo L\u00EDquido</strong>',fcFluxo,'total-row');
+      h+=r('<strong style="color:#6366F1;">= Fluxo L\u00EDquido</strong>',fcFluxo,'total-row');
       // Saldo acumulado
       const saldoQ=qr.map(([s,e])=>saldo[e]||0);
-      const sRow='<tr class="total-row" style="background:#EAF3DE;"><td><strong style="color:#0F6E56;">Saldo Acumulado</strong></td><td class="num pos">'+fmt(saldoQ[0])+'</td><td class="num pos">'+fmt(saldoQ[1])+'</td><td class="num pos">'+fmt(saldoQ[2])+'</td><td class="num pos">'+fmt(saldoQ[3])+'</td><td class="num pos"><strong>'+fmt(saldoQ[3])+'</strong></td><td class="num pos"><strong>'+fmt(saldoQ[7])+'</strong></td><td class="num pos"><strong>'+fmt(saldoQ[11])+'</strong></td></tr>';
+      const sRow='<tr class="total-row" style="background:#D1FAE5;"><td><strong style="color:#10B981;">Saldo Acumulado</strong></td><td class="num pos">'+fmt(saldoQ[0])+'</td><td class="num pos">'+fmt(saldoQ[1])+'</td><td class="num pos">'+fmt(saldoQ[2])+'</td><td class="num pos">'+fmt(saldoQ[3])+'</td><td class="num pos"><strong>'+fmt(saldoQ[3])+'</strong></td><td class="num pos"><strong>'+fmt(saldoQ[7])+'</strong></td><td class="num pos"><strong>'+fmt(saldoQ[11])+'</strong></td></tr>';
       h+=sRow;
       tb.innerHTML=h;
     })();
@@ -1157,13 +1160,13 @@ let ctCharts = {};
         sOpt+=(entOpt-sai); sCons+=(entCons-sai);
         opt.push(sOpt); cons.push(Math.max(0,sCons)); base.push(saldo[m]||0);
       }
-      new Chart(document.getElementById('chartScenarios'),{type:'line',data:{labels:MONTHS,datasets:[{label:'Otimista (+20%)',data:opt,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.06)',fill:true,tension:0.3,pointRadius:0,borderWidth:2},{label:'Base',data:base,borderColor:'#534AB7',tension:0.3,pointRadius:0,borderWidth:2.5},{label:'Conservador (-30%)',data:cons,borderColor:'#D85A30',backgroundColor:'rgba(216,90,48,0.06)',fill:true,tension:0.3,pointRadius:0,borderWidth:2,borderDash:[6,3]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>fmt(v)}}}}});
+      new Chart(document.getElementById('chartScenarios'),{type:'line',data:{labels:MONTHS,datasets:[{label:'Otimista (+20%)',data:opt,borderColor:'#1D9E75',backgroundColor:'rgba(16,185,129,0.06)',fill:true,tension:0.3,pointRadius:0,borderWidth:2},{label:'Base',data:base,borderColor:'#6366F1',tension:0.3,pointRadius:0,borderWidth:2.5},{label:'Conservador (-30%)',data:cons,borderColor:'#D85A30',backgroundColor:'rgba(255,138,92,0.06)',fill:true,tension:0.3,pointRadius:0,borderWidth:2,borderDash:[6,3]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{ticks:{callback:v=>fmt(v)}}}}});
     })();
 
     const arrData=mrrData.map(v=>v*12);
-    new Chart(document.getElementById('chartARR'),{type:'line',data:{labels:mLabels,datasets:[{data:arrData,borderColor:'#534AB7',backgroundColor:'rgba(83,74,183,0.1)',fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{title:{display:true,text:'ARR (R$)'},ticks:{callback:v=>fmt(v)}}}}});
+    new Chart(document.getElementById('chartARR'),{type:'line',data:{labels:mLabels,datasets:[{data:arrData,borderColor:'#6366F1',backgroundColor:'rgba(99,102,241,0.1)',fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},y:{title:{display:true,text:'ARR (R$)'},ticks:{callback:v=>fmt(v)}}}}});
 
-    new Chart(document.getElementById('chartMix'),{type:'bar',data:{labels:['M12','M24','M36'],datasets:[{label:'Hire',data:[hire[m12],hire[m24],hire[m36]],backgroundColor:'#534AB7'},{label:'Plus',data:[plus[m12],plus[m24],plus[m36]],backgroundColor:'#D85A30'},{label:'Pro',data:[pro[m12],pro[m24],pro[m36]],backgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{usePointStyle:true,pointStyle:'rect',boxWidth:10}}},scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>fmtN(v)}}}}});
+    new Chart(document.getElementById('chartMix'),{type:'bar',data:{labels:['M12','M24','M36'],datasets:[{label:'Hire',data:[hire[m12],hire[m24],hire[m36]],backgroundColor:'#6366F1'},{label:'Plus',data:[plus[m12],plus[m24],plus[m36]],backgroundColor:'#D85A30'},{label:'Pro',data:[pro[m12],pro[m24],pro[m36]],backgroundColor:'#1D9E75'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{usePointStyle:true,pointStyle:'rect',boxWidth:10}}},scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>fmtN(v)}}}}});
 
     initCapTable();
 
@@ -1226,7 +1229,7 @@ function renderCapTable(){
 
   ct.innerHTML=`
     <div class="ct-round">
-      <div class="ct-round-header"><div class="ct-round-title">Funda\u00E7\u00E3o<span class="round-badge" style="background:#EEEDFE;color:#534AB7;">100% founders</span></div></div>
+      <div class="ct-round-header"><div class="ct-round-title">Funda\u00E7\u00E3o<span class="round-badge" style="background:#EEF2FF;color:#6366F1;">100% founders</span></div></div>
       <div class="ct-body">
         <div>
           ${row(COLORS.halef,'Halef Soler',s0.halef,undefined,0)}
@@ -1239,7 +1242,7 @@ function renderCapTable(){
 
     <div class="ct-round">
       <div class="ct-round-header">
-        <div class="ct-round-title">Pre-Seed<span class="round-badge" style="background:#EAF3DE;color:#3B6D11;">Rodada atual</span></div>
+        <div class="ct-round-title">Pre-Seed<span class="round-badge" style="background:#D1FAE5;color:#065F46;">Rodada atual</span></div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
           <div class="ct-input-group"><label>Equity:</label><input class="ct-input" id="ct-preseed-pct" type="number" min="1" max="50" step="0.5" value="${preSeedPct}" onchange="renderCapTable()"><span class="suffix">%</span></div>
           <div class="ct-input-group"><label>Valor:</label><span class="suffix">$</span><input class="ct-input" id="ct-preseed-amt" type="number" min="100000" step="100000" value="${preSeedAmt}" onchange="renderCapTable()" style="width:100px;"></div>
@@ -1249,7 +1252,7 @@ function renderCapTable(){
         <div class="ct-val-item"><div class="ct-val-label">Pre-money</div><div class="ct-val-num">${fmtUSD(preMoneyPS)}</div></div>
         <div class="ct-val-item"><div class="ct-val-label">Post-money</div><div class="ct-val-num">${fmtUSD(postMoneyPS)}</div></div>
         <div class="ct-val-item"><div class="ct-val-label">Raise</div><div class="ct-val-num">${fmtUSD(preSeedAmt)}</div></div>
-        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#A32D2D;">${preSeedPct.toFixed(1)}%</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#EF4444;">${preSeedPct.toFixed(1)}%</div></div>
       </div>
       <div class="ct-body">
         <div>
@@ -1264,14 +1267,14 @@ function renderCapTable(){
 
     <div class="ct-round">
       <div class="ct-round-header">
-        <div class="ct-round-title">ESOP Pool<span class="round-badge" style="background:#FFF3E0;color:#D85A30;">Pr\u00E9-Seed</span></div>
+        <div class="ct-round-title">ESOP Pool<span class="round-badge" style="background:#FEF3C7;color:#F59E0B;">Pr\u00E9-Seed</span></div>
         <div class="ct-input-group"><label>Pool:</label><input class="ct-input" id="ct-esop-pct" type="number" min="0" max="20" step="1" value="${esopPct}" onchange="renderCapTable()"><span class="suffix">%</span></div>
       </div>
       <div class="ct-valuation">
         <div class="ct-val-item"><div class="ct-val-label">Pre-money</div><div class="ct-val-num">${fmtUSD(postMoneyPS)}</div></div>
         <div class="ct-val-item"><div class="ct-val-label">Post-money</div><div class="ct-val-num">${fmtUSD(postMoneyPS)}</div></div>
         <div class="ct-val-item"><div class="ct-val-label">Raise</div><div class="ct-val-num">$0</div></div>
-        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#A32D2D;">${esopPct}%</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#EF4444;">${esopPct}%</div></div>
       </div>
       <div class="ct-market-note">Padr\u00E3o de mercado: 10% ESOP pool criado antes do Seed</div>
       <div class="ct-body">
@@ -1288,7 +1291,7 @@ function renderCapTable(){
 
     <div class="ct-round">
       <div class="ct-round-header">
-        <div class="ct-round-title">Seed<span class="round-badge" style="background:#E3F2FD;color:#2196F3;">Pr\u00F3xima rodada</span></div>
+        <div class="ct-round-title">Seed<span class="round-badge" style="background:#DBEAFE;color:#3B82F6;">Pr\u00F3xima rodada</span></div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
           <div class="ct-input-group"><label>Equity:</label><input class="ct-input" id="ct-seed-pct" type="number" min="1" max="40" step="1" value="${seedPct}" onchange="renderCapTable()"><span class="suffix">%</span></div>
           <div class="ct-input-group"><label>Valor:</label><span class="suffix">$</span><input class="ct-input" id="ct-seed-amt" type="number" min="100000" step="500000" value="${seedAmt}" onchange="renderCapTable()" style="width:100px;"></div>
@@ -1298,7 +1301,7 @@ function renderCapTable(){
         <div class="ct-val-item"><div class="ct-val-label">Pre-money</div><div class="ct-val-num">${fmtUSD(preMoneySeed)}</div></div>
         <div class="ct-val-item"><div class="ct-val-label">Post-money</div><div class="ct-val-num">${fmtUSD(postMoneySeed)}</div></div>
         <div class="ct-val-item"><div class="ct-val-label">Raise</div><div class="ct-val-num">${fmtUSD(seedAmt)}</div></div>
-        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#A32D2D;">${seedPct}%</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#EF4444;">${seedPct}%</div></div>
       </div>
       <div class="ct-market-note">Padr\u00E3o de mercado: 15\u201320% dilui\u00E7\u00E3o, $2\u20135M raise</div>
       <div class="ct-body">
@@ -1316,7 +1319,7 @@ function renderCapTable(){
 
     <div class="ct-round">
       <div class="ct-round-header">
-        <div class="ct-round-title">S\u00E9rie A<span class="round-badge" style="background:#F3E5F5;color:#9C27B0;">Proje\u00E7\u00E3o</span></div>
+        <div class="ct-round-title">S\u00E9rie A<span class="round-badge" style="background:#EDE9FE;color:#8B5CF6;">Proje\u00E7\u00E3o</span></div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
           <div class="ct-input-group"><label>Equity:</label><input class="ct-input" id="ct-seriesa-pct" type="number" min="1" max="40" step="1" value="${seriesAPct}" onchange="renderCapTable()"><span class="suffix">%</span></div>
           <div class="ct-input-group"><label>Valor:</label><span class="suffix">$</span><input class="ct-input" id="ct-seriesa-amt" type="number" min="1000000" step="1000000" value="${seriesAAmt}" onchange="renderCapTable()" style="width:100px;"></div>
@@ -1326,7 +1329,7 @@ function renderCapTable(){
         <div class="ct-val-item"><div class="ct-val-label">Pre-money</div><div class="ct-val-num">${fmtUSD(preMoneyA)}</div></div>
         <div class="ct-val-item"><div class="ct-val-label">Post-money</div><div class="ct-val-num">${fmtUSD(postMoneyA)}</div></div>
         <div class="ct-val-item"><div class="ct-val-label">Raise</div><div class="ct-val-num">${fmtUSD(seriesAAmt)}</div></div>
-        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#A32D2D;">${seriesAPct}%</div></div>
+        <div class="ct-val-item"><div class="ct-val-label">Dilui\u00E7\u00E3o</div><div class="ct-val-num" style="color:#EF4444;">${seriesAPct}%</div></div>
       </div>
       <div class="ct-market-note">Padr\u00E3o de mercado: 15\u201325% dilui\u00E7\u00E3o, $10\u201320M raise</div>
       <div class="ct-body">
@@ -1344,11 +1347,11 @@ function renderCapTable(){
     </div>
 
     <div class="ct-summary">
-      <h3 style="margin-top:0;margin-bottom:12px;color:#534AB7;">Resumo p\u00F3s-S\u00E9rie A</h3>
+      <h3 style="margin-top:0;margin-bottom:12px;color:#6366F1;">Resumo p\u00F3s-S\u00E9rie A</h3>
       <div class="ct-summary-grid">
-        <div class="ct-summary-item"><div class="ct-s-label">Founders (3)</div><div class="ct-s-value">${foundersA.toFixed(1)}%</div><div style="font-size:12px;color:#534AB7;font-weight:500;">${fmtUSD(foundersA/100*postMoneyA)}</div></div>
-        <div class="ct-summary-item"><div class="ct-s-label">Investidores</div><div class="ct-s-value">${(s4.preseed+s4.seed+s4.seriesA).toFixed(1)}%</div><div style="font-size:12px;color:#534AB7;font-weight:500;">${fmtUSD((s4.preseed+s4.seed+s4.seriesA)/100*postMoneyA)}</div></div>
-        <div class="ct-summary-item"><div class="ct-s-label">ESOP</div><div class="ct-s-value">${s4.esop.toFixed(1)}%</div><div style="font-size:12px;color:#534AB7;font-weight:500;">${fmtUSD(s4.esop/100*postMoneyA)}</div></div>
+        <div class="ct-summary-item"><div class="ct-s-label">Founders (3)</div><div class="ct-s-value">${foundersA.toFixed(1)}%</div><div style="font-size:12px;color:#6366F1;font-weight:500;">${fmtUSD(foundersA/100*postMoneyA)}</div></div>
+        <div class="ct-summary-item"><div class="ct-s-label">Investidores</div><div class="ct-s-value">${(s4.preseed+s4.seed+s4.seriesA).toFixed(1)}%</div><div style="font-size:12px;color:#6366F1;font-weight:500;">${fmtUSD((s4.preseed+s4.seed+s4.seriesA)/100*postMoneyA)}</div></div>
+        <div class="ct-summary-item"><div class="ct-s-label">ESOP</div><div class="ct-s-value">${s4.esop.toFixed(1)}%</div><div style="font-size:12px;color:#6366F1;font-weight:500;">${fmtUSD(s4.esop/100*postMoneyA)}</div></div>
         <div class="ct-summary-item"><div class="ct-s-label">Post-money</div><div class="ct-s-value">${fmtUSD(postMoneyA)}</div></div>
       </div>
       <div class="insight" style="margin-top:16px;">Founders mant\u00EAm <strong>${foundersA.toFixed(1)}%</strong> (${fmtUSD(foundersA/100*postMoneyA)}) ap\u00F3s S\u00E9rie A. Padr\u00E3o saud\u00E1vel de mercado: founders com >40% at\u00E9 S\u00E9rie A \u00E9 considerado forte para manter controle e alinhamento de incentivos.</div>
