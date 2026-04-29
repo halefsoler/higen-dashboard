@@ -119,6 +119,30 @@ table.data tr:hover { background: #faf9f6; }
 .ct-summary-item .ct-s-label { font-size: 11px; color: #888; margin-bottom: 2px; }
 .ct-summary-item .ct-s-value { font-size: 20px; font-weight: 600; color: #534AB7; }
 .ct-market-note { font-size: 12px; color: #888; font-style: italic; margin-top: 4px; }
+.ra-hero { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+@media (max-width: 700px) { .ra-hero { grid-template-columns: repeat(2, 1fr); } }
+.ra-card { border-radius: 12px; padding: 18px; color: #fff; }
+.ra-card .ra-label { font-size: 11px; opacity: 0.75; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.ra-card .ra-big { font-size: 28px; font-weight: 700; }
+.ra-card .ra-sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+.ra-section { background: #f8f7f4; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.ra-section-title { font-size: 15px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.ra-section-title .ra-icon { font-size: 18px; }
+.kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+@media (max-width: 600px) { .kanban { grid-template-columns: 1fr; } }
+.kanban-col { border-radius: 10px; padding: 14px; min-height: 120px; }
+.kanban-col .kc-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.kanban-col .kc-count { background: rgba(0,0,0,0.1); border-radius: 10px; padding: 1px 7px; font-size: 11px; }
+.kanban-card { background: #fff; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 8px; }
+.kanban-card:last-child { margin-bottom: 0; }
+.kanban-card .kc-logo { width: 24px; height: 24px; border-radius: 6px; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #888; flex-shrink: 0; }
+.ra-assumptions { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.ra-assumption-card { background: #fff; border-radius: 8px; padding: 12px 16px; border-left: 3px solid #534AB7; }
+.ra-assumption-card .ra-a-title { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px; }
+.ra-assumption-card .ra-a-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 13px; border-bottom: 1px solid #f1efe8; }
+.ra-assumption-card .ra-a-row:last-child { border-bottom: none; }
+.ra-assumption-card .ra-a-label { color: #666; }
+.ra-assumption-card .ra-a-val { font-weight: 600; font-variant-numeric: tabular-nums; }
 .cf-hero { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
 @media (max-width: 700px) { .cf-hero { grid-template-columns: repeat(2, 1fr); } }
 .cf-card { border-radius: 10px; padding: 16px; color: #fff; }
@@ -148,7 +172,7 @@ table.data tr:hover { background: #faf9f6; }
 <div id="app">
   <div class="loading">
     <div class="spinner"></div>
-    <div>Carregando dados do Google Drive...</div>
+    <div>Carregando dashboard...</div>
   </div>
 </div>
 
@@ -165,20 +189,8 @@ function fmtN(n) { if(Math.abs(n)>=1e6)return(n/1e6).toFixed(1)+'M'; if(Math.abs
 function findRow(lines,kw) { for(let i=0;i<lines.length;i++){if(lines[i].includes(kw))return lines[i];} return null; }
 function extractMonthlyValues(line,si) { let c=parseRow(line); return c.slice(si).map(parseBRL); }
 
-let ctCharts = {};
 const COLORS = {halef:'#534AB7',fukuda:'#1D9E75',joao:'#D85A30',preseed:'#888',esop:'#E8C547',seed:'#2196F3',seriesA:'#9C27B0'};
-
-function initCapTable(){ renderCapTable(); }
-
-function getVal(id,def){const el=document.getElementById(id);return el?parseFloat(el.value)||def:def;}
-
-function showTab(id,btn){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  btn.classList.add('active');
-  if(id==='captable') renderCapTable();
-}
+let ctCharts = {};
 
 (async function() {
   try {
@@ -740,7 +752,8 @@ function showTab(id,btn){
 
     document.getElementById('app').innerHTML = `
       <nav class="nav">
-        <button class="active" onclick="showTab('overview',this)">Vis\u00E3o geral</button>
+        <button class="active" onclick="showTab('retrato',this)">Retrato Atual</button>
+        <button onclick="showTab('overview',this)">Vis\u00E3o geral</button>
         <button onclick="showTab('unit',this)">Unit economics</button>
         <button onclick="showTab('cost',this)">Custo por user</button>
         <button onclick="showTab('ratio',this)">Free:Paid ratio</button>
@@ -749,7 +762,111 @@ function showTab(id,btn){
         <button onclick="showTab('captable',this)" style="border-color:#534AB7;color:#534AB7;font-weight:600;">Cap Table</button>
       </nav>
 
-      <div id="overview" class="section active">
+      <div id="retrato" class="section active">
+        <h2 style="margin-top:0;">Retrato Atual \u2014 hiGen em tempo real</h2>
+        
+        <div class="ra-hero">
+          <div class="ra-card" style="background:linear-gradient(135deg,#534AB7,#3b35a0);">
+            <div class="ra-label">Users totais</div>
+            <div class="ra-big">642</div>
+            <div class="ra-sub">Cadastrados na plataforma</div>
+          </div>
+          <div class="ra-card" style="background:linear-gradient(135deg,#1D9E75,#177a5b);">
+            <div class="ra-label">HirePro (RocketSeat)</div>
+            <div class="ra-big">14</div>
+            <div class="ra-sub">Parceria ativa</div>
+          </div>
+          <div class="ra-card" style="background:linear-gradient(135deg,#D85A30,#b84a28);">
+            <div class="ra-label">Hire (pagantes)</div>
+            <div class="ra-big">2</div>
+            <div class="ra-sub">R$28,02 l\u00EDquido \u00B7 R$30 faturado</div>
+          </div>
+          <div class="ra-card" style="background:linear-gradient(135deg,#2196F3,#1976D2);">
+            <div class="ra-label">Auto Apply</div>
+            <div class="ra-big">337</div>
+            <div class="ra-sub">Aplica\u00E7\u00F5es \u2014 1 semana de go-live</div>
+          </div>
+        </div>
+
+        <div class="ra-section">
+          <div class="ra-section-title"><span class="ra-icon">\u{1F3AF}</span> Pilotos com Institui\u00E7\u00F5es</div>
+          <div class="kanban">
+            <div class="kanban-col" style="background:#f0eeff;">
+              <div class="kc-title" style="color:#534AB7;">\u{1F4CB} To Do <span class="kc-count">2</span></div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#EEEDFE;color:#534AB7;">P</div>Pearson</div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#E3F2FD;color:#2196F3;">B</div>BeConfident</div>
+            </div>
+            <div class="kanban-col" style="background:#FFF3E0;">
+              <div class="kc-title" style="color:#D85A30;">\u{1F528} Doing <span class="kc-count">1</span></div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#FFF3E0;color:#D85A30;">A</div>Anima</div>
+            </div>
+            <div class="kanban-col" style="background:#EAF3DE;">
+              <div class="kc-title" style="color:#3B6D11;">\u2705 Done <span class="kc-count">3</span></div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#EAF3DE;color:#3B6D11;">A</div>Alura</div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#EAF3DE;color:#3B6D11;">U</div>UNISUAM</div>
+              <div class="kanban-card"><div class="kc-logo" style="background:#EAF3DE;color:#3B6D11;">E</div>EBAC</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ra-section">
+          <div class="ra-section-title"><span class="ra-icon">\u{1F4CA}</span> Premissas do Modelo (Assumptions)</div>
+          <div class="ra-assumptions">
+            <div class="ra-assumption-card">
+              <div class="ra-a-title">1. Base Inicial</div>
+              <div class="ra-a-row"><span class="ra-a-label">Free/Freemium</span><span class="ra-a-val">642</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Hire (R$15/m\u00EAs)</span><span class="ra-a-val">2</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Plus (R$20/m\u00EAs)</span><span class="ra-a-val">0</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Pro (R$50/3m)</span><span class="ra-a-val">12</span></div>
+            </div>
+            <div class="ra-assumption-card">
+              <div class="ra-a-title">2. Crescimento Base Free</div>
+              <div class="ra-a-row"><span class="ra-a-label">Novos org\u00E2nicos M1</span><span class="ra-a-val">1.000/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Cresc. Y1 (M1-M12)</span><span class="ra-a-val">8%/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Cresc. Y2 (M13-M24)</span><span class="ra-a-val">5%/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Cresc. Y3 (M25-M36)</span><span class="ra-a-val">3%/m\u00EAs</span></div>
+            </div>
+            <div class="ra-assumption-card">
+              <div class="ra-a-title">3. Convers\u00E3o e Churn</div>
+              <div class="ra-a-row"><span class="ra-a-label">Conv. free \u2192 pago</span><span class="ra-a-val">8%/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Inatividade free</span><span class="ra-a-val">10%/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Churn hard</span><span class="ra-a-val">3%/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Downgrade Hire/Plus</span><span class="ra-a-val">19,5%/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Downgrade Pro</span><span class="ra-a-val">30,3%/m\u00EAs</span></div>
+            </div>
+            <div class="ra-assumption-card">
+              <div class="ra-a-title">4. Pre\u00E7os e Mix</div>
+              <div class="ra-a-row"><span class="ra-a-label">Hire promo (M1-M6)</span><span class="ra-a-val">R$15/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Hire regular (M7+)</span><span class="ra-a-val">R$39/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Plus</span><span class="ra-a-val">R$20/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Pro</span><span class="ra-a-val">R$45/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Mix Hire/Plus/Pro</span><span class="ra-a-val">15/25/60%</span></div>
+            </div>
+            <div class="ra-assumption-card">
+              <div class="ra-a-title">5. Selo RR (B2B)</div>
+              <div class="ra-a-row"><span class="ra-a-label">Pre\u00E7o por selo</span><span class="ra-a-val">R$50</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Selos/empresa/m\u00EAs</span><span class="ra-a-val">10</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Ticket m\u00E9dio</span><span class="ra-a-val">R$500/m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Churn empresas</span><span class="ra-a-val">3%/m\u00EAs</span></div>
+            </div>
+            <div class="ra-assumption-card" style="border-left-color:#1D9E75;">
+              <div class="ra-a-title">14. Canal Entidades Estudantis</div>
+              <div class="ra-a-row"><span class="ra-a-label">Entidades/m\u00EAs</span><span class="ra-a-val">20</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Membros/entidade</span><span class="ra-a-val">45</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Free trial</span><span class="ra-a-val">1 m\u00EAs</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Estudantes/entidade</span><span class="ra-a-val">600 em 6m</span></div>
+              <div class="ra-a-row"><span class="ra-a-label">Pico Pro mensal</span><span class="ra-a-val">12.000</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight-highlight" style="margin-top:16px;">
+          <strong>Status:</strong> 642 usu\u00E1rios cadastrados, <span class="big-number">16</span> pagantes (14 HirePro + 2 Hire), <span class="big-green">337</span> aplica\u00E7\u00F5es via Auto Apply na 1\u00AA semana. Pipeline de pilotos com <strong>6 institui\u00E7\u00F5es</strong> (3 conclu\u00EDdos, 1 em andamento, 2 a iniciar).
+        </div>
+      </div>
+
+      
+      <div id="overview" class="section">
         <div class="ov-hero">
           <div class="ov-raise-card">
             <div class="ov-label">Rodada Pre-Seed</div>
@@ -963,7 +1080,7 @@ function showTab(id,btn){
         <div id="ctContent"></div>
       </div>
 
-      <div class="source">Dados: <a href="https://docs.google.com/spreadsheets/d/${FILE_ID}" target="_blank">hiGen_Financial_Model_36M_v13</a> (Google Drive) &middot; Snapshot Abril/2026</div>
+      <div class="source">Dados: <a href="https://docs.google.com/spreadsheets/d/${FILE_ID}" target="_blank">hiGen_Financial_Model_36M_v13</a> (Google Drive) &middot; Atualizado ao recarregar</div>
     `;
 
     const mLabels=MONTHS.slice(1), mrrData=mrr.slice(1), payData=totalPay.slice(1);
@@ -1055,9 +1172,18 @@ function showTab(id,btn){
   }
 })();
 
+function showTab(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='captable') renderCapTable();
+}
 
 
+function initCapTable(){ renderCapTable(); }
 
+function getVal(id,def){const el=document.getElementById(id);return el?parseFloat(el.value)||def:def;}
 
 function renderCapTable(){
   const ct=document.getElementById('ctContent');
