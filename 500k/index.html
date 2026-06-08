@@ -742,16 +742,16 @@ function extractMonthlyValues(line,si) { let c=parseRow(line); return c.slice(si
 
     document.getElementById('app').innerHTML = `
       <nav class="nav">
-        <button class="active" onclick="showTab('retrato',this)">Retrato Atual</button>
+        <button class="active" onclick="showTab('investor',this)">M\u00E9tricas investidor</button>
+        <button onclick="showTab('retrato',this)">Retrato Atual</button>
         <button onclick="showTab('overview',this)">Vis\u00E3o geral</button>
         <button onclick="showTab('unit',this)">Unit economics</button>
         <button onclick="showTab('cost',this)">Custo por user</button>
         <button onclick="showTab('ratio',this)">Free:Paid ratio</button>
         <button onclick="showTab('cash',this)">Fluxo de caixa</button>
-        <button onclick="showTab('investor',this)">M\u00E9tricas investidor</button>
       </nav>
 
-      <div id="retrato" class="section active">
+      <div id="retrato" class="section">
         <h2 style="margin-top:0;">Retrato Atual \u2014 hiGen em tempo real</h2>
         
         <div class="ra-hero">
@@ -1055,7 +1055,7 @@ function extractMonthlyValues(line,si) { let c=parseRow(line); return c.slice(si
         <div class="insight-highlight" style="margin-top:16px;"><strong>Para o investidor:</strong> com capta\u00E7\u00E3o de <span class="big-number">R$3M</span>, a hiGen atinge cash positive em <span class="big-green">M${cashPositiveMonth}</span> e acumula <span class="big-number">${fmt(saldo[36]||0)}</span> em M36. Mesmo no cen\u00E1rio conservador (-30% receita), o runway permanece >36 meses. A estrutura de custos \u00E9 altamente escal\u00E1vel: folha fixa de ~R$200K/m\u00EAs com receita que cresce 5-10x.</div>
       </div>
 
-      <div id="investor" class="section">
+      <div id="investor" class="section active">
         <h2>M\u00E9tricas-chave para investidor</h2>
         <h3 style="color:#6366F1;margin:0 0 12px;font-size:15px;">Aloca\u00E7\u00E3o dos Fundos (Y1)</h3>
         <div class="grid" style="grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px;">
