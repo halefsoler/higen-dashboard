@@ -168,7 +168,7 @@ table.data tr:hover { background: #faf9f6; }
 </div>
 
 <script>
-const FILE_ID = '1nYfpzPatcBlbiwry37zSumYXdsiwbfiCfI-mTqn-B8k';
+const FILE_ID = '1HIoYoDSlhoNdwciuGU17YJbdFEMnAYbb2yROTcZQUGU';
 const MONTHS = ['M0','M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12','M13','M14','M15','M16','M17','M18','M19','M20','M21','M22','M23','M24','M25','M26','M27','M28','M29','M30','M31','M32','M33','M34','M35','M36'];
 
 function parseRow(line) { if(!line||!line.includes('|'))return[]; return line.split('|').map(c=>c.trim()).filter((_,i,a)=>i>0&&i<a.length-1); }
@@ -395,7 +395,7 @@ function extractMonthlyValues(line,si) { let c=parseRow(line); return c.slice(si
 |  |  |  |  |  |  |
 | ð¡ UNIT ECONOMICS |  |  |  |  |  |
 | ARPU mensal (Receita/Usuário Pagante) | R$ | R$ 40,99 | R$ 40,68 | R$ 40,44 | Ticket médio ponderado dos planos |
-| LTV Plano Hire (R$20/mês) | R$ | R$ 173,33 | R$ 173,33 | R$ 173,33 | R$15 / 33% churn total \~ R$45 |
+| LTV Plano Hire (R$60/mês) | R$ | R$ 266,67 | R$ 266,67 | R$ 266,67 | R$60 / 22,5% monthly attrition |
 | LTV Plano Plus (R$20/mês) | R$ | R$ 88,89 | R$ 88,89 | R$ 88,89 | R$20 / 33% churn total \~ R$60 |
 | LTV Plano Pro (R$45/mês ef.) | R$ | R$ 150,15 | R$ 150,15 | R$ 150,15 | R$16,67 / 33% churn total \~ R$50 |
 
@@ -1079,7 +1079,10 @@ function extractMonthlyValues(line,si) { let c=parseRow(line); return c.slice(si
 
       </div>
 
-      <div class="source">Dados: <a href="https://docs.google.com/spreadsheets/d/${FILE_ID}" target="_blank">hiGen_Financial_Model_36M_v13</a> (Google Drive) &middot; Atualizado ao recarregar</div>
+      <div class="source" style="text-align:center;margin-top:24px;">
+        <a href="https://docs.google.com/spreadsheets/d/1HIoYoDSlhoNdwciuGU17YJbdFEMnAYbb2yROTcZQUGU/edit?usp=sharing" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#E94B8C,#FF8A5C);color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;letter-spacing:0.3px;transition:opacity 0.2s;">📊 Ver Modelo Financeiro Completo (Google Sheets)</a>
+        <div style="margin-top:8px;color:#888;font-size:12px;">R$1,75M &middot; 3,5% equity &middot; Val. R$50M &middot; Projeção 36 meses</div>
+      </div>
     `;
 
     const mLabels=MONTHS.slice(1), mrrData=mrr.slice(1), payData=totalPay.slice(1);
