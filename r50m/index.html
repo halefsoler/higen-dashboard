@@ -699,7 +699,7 @@ function extractMonthlyValues(line,si) { let c=parseRow(line); return c.slice(si
     const maxBurn=Math.max(...burnRate);
     const maxBurnMonth=burnRate.indexOf(maxBurn);
     // % captação consumida at M12
-    const captTotal=6000000;
+    const captTotal=1750000;
     const pctCaptConsumed12=captTotal>0?((captTotal-saldo[12])/captTotal*100):0;
 
     const m12=12,m24=24,m36=36;
