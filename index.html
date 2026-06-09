@@ -40,7 +40,7 @@ body {
   gap: 24px;
   flex-wrap: wrap;
   justify-content: center;
-  max-width: 720px;
+  max-width: 1080px;
 }
 .card {
   background: #1A1A24;
@@ -62,6 +62,7 @@ body {
 }
 .card-1m::before { background: linear-gradient(90deg, #6366F1, #818CF8); }
 .card-500k::before { background: linear-gradient(90deg, #10B981, #34D399); }
+.card-50m::before { background: linear-gradient(90deg, #E94B8C, #FF8A5C); }
 .card:hover {
   transform: translateY(-4px);
   border-color: #444;
@@ -79,6 +80,7 @@ body {
 }
 .card-1m .card-tag { background: rgba(99,102,241,0.15); color: #818CF8; }
 .card-500k .card-tag { background: rgba(16,185,129,0.15); color: #34D399; }
+.card-50m .card-tag { background: rgba(233,75,140,0.15); color: #FF8A5C; }
 .card-amount {
   font-size: 36px;
   font-weight: 800;
@@ -86,6 +88,7 @@ body {
 }
 .card-1m .card-amount { color: #818CF8; }
 .card-500k .card-amount { color: #34D399; }
+.card-50m .card-amount { color: #FF8A5C; }
 .card-equity {
   font-size: 14px;
   color: #888;
@@ -116,7 +119,7 @@ body {
 }
 .footer a { color: #666; text-decoration: none; }
 .footer a:hover { color: #aaa; }
-@media (max-width: 700px) {
+@media (max-width: 1060px) {
   .cards { flex-direction: column; align-items: center; }
   .card { width: 100%; max-width: 360px; }
   .logo { font-size: 32px; }
@@ -133,9 +136,9 @@ body {
       <div class="card-amount">$1M USD</div>
       <div class="card-equity">7% equity &middot; Post-money $14.3M</div>
       <div class="card-details">
-        <span>Runway 36 meses</span><br>
-        <span>Modelo financeiro completo</span><br>
-        <span>Unit economics &middot; Cap Table</span>
+        <span>Valuation $13.3M pre-money</span><br>
+        <span>Runway 36+ meses</span><br>
+        <span>Modelo financeiro completo</span>
       </div>
       <div class="card-arrow">&rarr;</div>
     </a>
@@ -145,9 +148,21 @@ body {
       <div class="card-amount">$500K USD</div>
       <div class="card-equity">3,5% equity &middot; Post-money $14.3M</div>
       <div class="card-details">
-        <span>Runway 36 meses</span><br>
-        <span>Modelo financeiro completo</span><br>
-        <span>Unit economics &middot; Cap Table</span>
+        <span>Valuation $13.3M pre-money</span><br>
+        <span>Runway 36+ meses</span><br>
+        <span>Modelo financeiro completo</span>
+      </div>
+      <div class="card-arrow">&rarr;</div>
+    </a>
+
+    <a href="./r50m/" class="card card-50m">
+      <div class="card-tag">Tese C</div>
+      <div class="card-amount">R$1,75M</div>
+      <div class="card-equity">3,5% equity &middot; Valuation R$50M</div>
+      <div class="card-details">
+        <span>Pre-money R$50M</span><br>
+        <span>Runway 36+ meses</span><br>
+        <span>Modelo financeiro completo</span>
       </div>
       <div class="card-arrow">&rarr;</div>
     </a>
